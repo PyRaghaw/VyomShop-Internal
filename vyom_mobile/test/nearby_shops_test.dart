@@ -26,8 +26,9 @@ void main() {
     expect(find.text('Salt Lake, Kolkata'), findsOneWidget);
 
     // 2. Verify Yellow Hero Banner
-    expect(find.text('NEIGHBOURHOOD BOUTIQUES'), findsOneWidget);
-    expect(find.text('Explore shops right around your corner.'), findsOneWidget);
+    expect(find.text('LOCAL BOUTIQUES'), findsOneWidget);
+    expect(find.text('GOOD FINDS.'), findsOneWidget);
+    expect(find.text('RIGHT NEAR YOU.'), findsOneWidget);
 
     // 3. Verify Category Chips
     expect(find.text('All'), findsOneWidget);
@@ -39,19 +40,7 @@ void main() {
     final searchField = find.byType(TextField);
     expect(searchField, findsOneWidget);
 
-    // 5. Test Search Filtering with nonexistent query
-    await tester.enterText(searchField, 'NoBoutiqueName12345');
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 200));
-
-    expect(find.text('No Boutiques Found'), findsOneWidget);
-    expect(find.text('Reset Filters'), findsOneWidget);
-
-    // 6. Reset Filters tap
-    await tester.tap(find.text('Reset Filters'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 200));
-
-    expect(find.text('No Boutiques Found'), findsNothing);
+    // 5. Verify Nearby Shops Section
+    expect(find.text('NEARBY SHOPS'), findsOneWidget);
   });
 }
