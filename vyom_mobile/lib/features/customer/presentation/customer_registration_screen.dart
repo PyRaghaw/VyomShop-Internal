@@ -228,9 +228,9 @@ class _CustomerRegistrationScreenState extends State<CustomerRegistrationScreen>
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'CUSTOMER ONBOARDING',
-                    style: TextStyle(
+                  Text(
+                    widget.isFromProfile ? 'COMPLETE PROFILE' : 'CUSTOMER ONBOARDING',
+                    style: const TextStyle(
                       fontFamily: 'Manrope',
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
@@ -536,46 +536,43 @@ class _CustomerRegistrationScreenState extends State<CustomerRegistrationScreen>
                   ],
                 ),
               ),
-              const SizedBox(height: 12),
-
-              // Skip option
-              Center(
-                child: GestureDetector(
-                  onTap: () async {
-                    final nav = Navigator.of(context);
-                    await CustomerService().skipRegistration();
-                    if (!mounted) return;
-                    if (widget.isFromProfile && nav.canPop()) {
-                      nav.pop(false);
-                      return;
-                    }
-                    nav.pushAndRemoveUntil(
-                      PageRouteBuilder(
-                        pageBuilder: (context, animation, secondaryAnimation) =>
-                            const CustomerNavigationShell(),
-                        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                          return FadeTransition(opacity: animation, child: child);
-                        },
-                        transitionDuration: const Duration(milliseconds: 300),
-                      ),
-                      (route) => false,
-                    );
-                  },
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                    child: Text(
-                      'Skip for now',
-                      style: TextStyle(
-                        fontFamily: 'Manrope',
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF6B6B65),
-                        decoration: TextDecoration.underline,
+              // Skip option (only visible during onboarding, not from profile)
+              if (!widget.isFromProfile) ...[
+                const SizedBox(height: 12),
+                Center(
+                  child: GestureDetector(
+                    onTap: () async {
+                      final nav = Navigator.of(context);
+                      await CustomerService().skipRegistration();
+                      if (!mounted) return;
+                      nav.pushAndRemoveUntil(
+                        PageRouteBuilder(
+                          pageBuilder: (context, animation, secondaryAnimation) =>
+                              const CustomerNavigationShell(),
+                          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                            return FadeTransition(opacity: animation, child: child);
+                          },
+                          transitionDuration: const Duration(milliseconds: 300),
+                        ),
+                        (route) => false,
+                      );
+                    },
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                      child: Text(
+                        'Skip for now',
+                        style: TextStyle(
+                          fontFamily: 'Manrope',
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF6B6B65),
+                          decoration: TextDecoration.underline,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
+              ],
             ],
           ),
         ),

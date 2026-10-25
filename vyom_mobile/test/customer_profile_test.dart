@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vyom_mobile/core/data/mock_data.dart';
 import 'package:vyom_mobile/core/services/customer_service.dart';
 import 'package:vyom_mobile/features/customer/presentation/customer_profile_screen.dart';
+import 'package:vyom_mobile/features/customer/presentation/customer_registration_screen.dart';
 
 void main() {
   setUp(() {
@@ -140,14 +141,39 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.text('HOW VISUAL SEARCH WORKS'), findsOneWidget);
-    expect(find.text('Camera Kholo'), findsOneWidget);
-    expect(find.text('Picture Click Karo'), findsOneWidget);
-    expect(find.text('Item Select Karo'), findsOneWidget);
-    expect(find.text('Press Search & Discover'), findsOneWidget);
+    expect(find.text('Open Camera Scanner'), findsOneWidget);
+    expect(find.text('Snap or Upload Photo'), findsOneWidget);
+    expect(find.text('Select Item Focus'), findsOneWidget);
+    expect(find.text('Discover Local Matches'), findsOneWidget);
     expect(find.text('GOT IT, LET’S SHOP'), findsOneWidget);
 
     await tester.tap(find.text('GOT IT, LET’S SHOP'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
+  });
+
+  testWidgets('CustomerRegistrationScreen hides Skip for now when isFromProfile is true', (tester) async {
+    MockData.enableMockData = true;
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 2.0;
+
+    addTearDown(() {
+      MockData.enableMockData = false;
+      tester.view.resetPhysicalSize();
+    });
+
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: CustomerRegistrationScreen(isFromProfile: true),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text('COMPLETE PROFILE'), findsOneWidget);
+    expect(find.text('START SHOPPING'), findsOneWidget);
+
+    // Verify Skip for now is NOT present when opened from profile
+    expect(find.text('Skip for now'), findsNothing);
   });
 }
