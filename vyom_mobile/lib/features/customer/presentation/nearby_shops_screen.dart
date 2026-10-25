@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../core/data/mock_data.dart';
 import '../../../core/models/shop_model.dart';
+import '../../../core/services/customer_service.dart';
 import '../../../core/services/shop_service.dart';
 import '../../../core/widgets/neo_pressable.dart';
 import '../../../core/widgets/shop_card_widget.dart';
@@ -54,6 +55,7 @@ class _NearbyShopsScreenState extends State<NearbyShopsScreen> {
   @override
   void initState() {
     super.initState();
+    _selectedNeighborhood = CustomerService().neighborhood;
     // Pre-populate with mock shops so UI always has rich boutique data
     _shops = _shopService.cachedShops.isNotEmpty
         ? _shopService.cachedShops

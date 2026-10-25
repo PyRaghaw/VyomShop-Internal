@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/vyom_arrow.dart';
-import '../../customer/presentation/customer_navigation_shell.dart';
+import '../../customer/presentation/customer_registration_screen.dart';
 import '../../seller/presentation/seller_registration_screen.dart';
 
 class ChooseRoleScreen extends StatefulWidget {
@@ -17,10 +17,10 @@ class _ChooseRoleScreenState extends State<ChooseRoleScreen> {
 
   void _navigateToRole(bool isCustomer) {
     if (isCustomer) {
-      Navigator.of(context).pushReplacement(
+      Navigator.of(context).push(
         PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
-              const CustomerNavigationShell(),
+              const CustomerRegistrationScreen(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(opacity: animation, child: child);
           },

@@ -7,6 +7,7 @@ import 'product_detail_screen.dart';
 import '../../../core/data/mock_data.dart';
 import '../../../core/models/shop_model.dart';
 import '../../../core/models/product_model.dart';
+import '../../../core/services/customer_service.dart';
 import '../../../core/services/product_service.dart';
 import '../../../core/services/shop_service.dart';
 import '../../../core/widgets/neo_pressable.dart';
@@ -53,6 +54,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   @override
   void initState() {
     super.initState();
+    _selectedNeighborhood = CustomerService().neighborhood;
     _loadData();
   }
 

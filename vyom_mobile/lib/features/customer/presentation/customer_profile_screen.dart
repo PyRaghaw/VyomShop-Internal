@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../../../core/services/customer_service.dart';
 import '../../../core/widgets/neo_pressable.dart';
 import '../../auth/presentation/choose_role_screen.dart';
 import '../../seller/presentation/seller_dashboard_screen.dart';
@@ -9,6 +10,8 @@ class CustomerProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final customer = CustomerService();
+
     return Scaffold(
       backgroundColor: const Color(0xFFF7F3E8),
       body: SafeArea(
@@ -80,10 +83,10 @@ class CustomerProfileScreen extends StatelessWidget {
                         shape: BoxShape.circle,
                         border: Border.all(color: const Color(0xFF101010), width: 2),
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Text(
-                          'AK',
-                          style: TextStyle(
+                          customer.initials,
+                          style: const TextStyle(
                             fontFamily: 'SpaceGrotesk',
                             fontSize: 20,
                             fontWeight: FontWeight.w800,
@@ -97,9 +100,9 @@ class CustomerProfileScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Alex Kumar',
-                            style: TextStyle(
+                          Text(
+                            customer.name,
+                            style: const TextStyle(
                               fontFamily: 'SpaceGrotesk',
                               fontSize: 18,
                               fontWeight: FontWeight.w800,
@@ -107,9 +110,9 @@ class CustomerProfileScreen extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 2),
-                          const Text(
-                            '+91 98765 43210',
-                            style: TextStyle(
+                          Text(
+                            customer.phone,
+                            style: const TextStyle(
                               fontFamily: 'Manrope',
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
@@ -129,9 +132,9 @@ class CustomerProfileScreen extends StatelessWidget {
                                 ),
                               ),
                               const SizedBox(width: 4),
-                              const Text(
-                                'Salt Lake, Kolkata',
-                                style: TextStyle(
+                              Text(
+                                customer.neighborhood,
+                                style: const TextStyle(
                                   fontFamily: 'Manrope',
                                   fontSize: 11,
                                   fontWeight: FontWeight.w700,
