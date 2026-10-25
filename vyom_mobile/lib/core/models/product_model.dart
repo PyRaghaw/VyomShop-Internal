@@ -95,6 +95,44 @@ class ProductModel {
     );
   }
 
+  ProductModel copyWith({
+    String? id,
+    String? shopId,
+    String? shopName,
+    String? name,
+    String? category,
+    double? price,
+    double? mrp,
+    double? rating,
+    double? distanceKm,
+    bool? inStock,
+    String? imageUrl,
+    String? description,
+    Color? cardColor,
+    int? matchPercentage,
+    List<String>? sizes,
+    List<String>? colors,
+  }) {
+    return ProductModel(
+      id: id ?? this.id,
+      shopId: shopId ?? this.shopId,
+      shopName: shopName ?? this.shopName,
+      name: name ?? this.name,
+      category: category ?? this.category,
+      price: price ?? this.price,
+      mrp: mrp ?? this.mrp,
+      rating: rating ?? this.rating,
+      distanceKm: distanceKm ?? this.distanceKm,
+      inStock: inStock ?? this.inStock,
+      imageUrl: imageUrl ?? this.imageUrl,
+      description: description ?? this.description,
+      cardColor: cardColor ?? this.cardColor,
+      matchPercentage: matchPercentage ?? this.matchPercentage,
+      sizes: sizes ?? this.sizes,
+      colors: colors ?? this.colors,
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,

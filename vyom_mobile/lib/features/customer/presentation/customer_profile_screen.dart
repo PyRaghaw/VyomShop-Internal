@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../../../core/services/customer_service.dart';
 import '../../../core/widgets/neo_pressable.dart';
 import '../../../core/widgets/vyom_arrow.dart';
@@ -17,9 +18,9 @@ class CustomerProfileScreen extends StatefulWidget {
 
 class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
   bool _neighborhoodAlerts = true;
-  bool _cameraPermission = true;
-  bool _locationPermission = true;
-  bool _storagePermission = true;
+  bool _cameraPermission = false;
+  bool _locationPermission = false;
+  bool _storagePermission = false;
 
   final List<String> _searchHistory = [
     'Floral Kurtis',
@@ -35,6 +36,22 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
     CustomerService().loadProfile().then((_) {
       if (mounted) setState(() {});
     });
+    _syncPermissions();
+  }
+
+  Future<void> _syncPermissions() async {
+    try {
+      final cam = await Permission.camera.status;
+      final loc = await Permission.location.status;
+      final photos = await Permission.photos.status;
+      if (mounted) {
+        setState(() {
+          _cameraPermission = cam.isGranted;
+          _locationPermission = loc.isGranted;
+          _storagePermission = photos.isGranted;
+        });
+      }
+    } catch (_) {}
   }
 
   Future<void> _navigateToRegister() async {
@@ -263,6 +280,8 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
   }
 
   void _showPrivacyPermissionsModal() {
+    _syncPermissions();
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -336,9 +355,18 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
                     title: 'Camera Access',
                     subtitle: 'Visual Search & taking photos of outfits',
                     value: _cameraPermission,
-                    onChanged: (val) {
-                      setModalState(() => _cameraPermission = val);
-                      setState(() => _cameraPermission = val);
+                    onChanged: (val) async {
+                      if (val) {
+                        final res = await Permission.camera.request();
+                        final granted = res.isGranted;
+                        if (!granted && res.isPermanentlyDenied) {
+                          await openAppSettings();
+                        }
+                        setModalState(() => _cameraPermission = granted);
+                        setState(() => _cameraPermission = granted);
+                      } else {
+                        await openAppSettings();
+                      }
                     },
                   ),
                   const SizedBox(height: 10),
@@ -347,9 +375,18 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
                     title: 'Location Services',
                     subtitle: 'Show nearby boutiques within your neighborhood',
                     value: _locationPermission,
-                    onChanged: (val) {
-                      setModalState(() => _locationPermission = val);
-                      setState(() => _locationPermission = val);
+                    onChanged: (val) async {
+                      if (val) {
+                        final res = await Permission.location.request();
+                        final granted = res.isGranted;
+                        if (!granted && res.isPermanentlyDenied) {
+                          await openAppSettings();
+                        }
+                        setModalState(() => _locationPermission = granted);
+                        setState(() => _locationPermission = granted);
+                      } else {
+                        await openAppSettings();
+                      }
                     },
                   ),
                   const SizedBox(height: 10),
@@ -358,12 +395,38 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
                     title: 'Storage & Gallery',
                     subtitle: 'Pick existing images for visual style matching',
                     value: _storagePermission,
-                    onChanged: (val) {
-                      setModalState(() => _storagePermission = val);
-                      setState(() => _storagePermission = val);
+                    onChanged: (val) async {
+                      if (val) {
+                        final res = await Permission.photos.request();
+                        final granted = res.isGranted;
+                        if (!granted && res.isPermanentlyDenied) {
+                          await openAppSettings();
+                        }
+                        setModalState(() => _storagePermission = granted);
+                        setState(() => _storagePermission = granted);
+                      } else {
+                        await openAppSettings();
+                      }
                     },
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 14),
+                  Center(
+                    child: TextButton.icon(
+                      onPressed: () async => await openAppSettings(),
+                      icon: const Icon(Icons.settings_outlined, size: 16, color: Color(0xFF101010)),
+                      label: const Text(
+                        'OPEN DEVICE APP SETTINGS',
+                        style: TextStyle(
+                          fontFamily: 'SpaceGrotesk',
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF101010),
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
                   NeoPressable(
                     onTap: () {
                       Navigator.of(context).pop();

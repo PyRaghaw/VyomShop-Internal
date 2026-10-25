@@ -79,6 +79,50 @@ class ShopModel {
     );
   }
 
+  ShopModel copyWith({
+    String? id,
+    String? name,
+    String? category,
+    String? tag,
+    double? rating,
+    int? reviewsCount,
+    double? distanceKm,
+    String? address,
+    String? neighborhood,
+    double? latitude,
+    double? longitude,
+    bool? isOpen,
+    String? imageUrl,
+    String? phone,
+    String? closingTime,
+    String? openTime,
+    String? ownerName,
+    String? email,
+    String? description,
+  }) {
+    return ShopModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      category: category ?? this.category,
+      tag: tag ?? this.tag,
+      rating: rating ?? this.rating,
+      reviewsCount: reviewsCount ?? this.reviewsCount,
+      distanceKm: distanceKm ?? this.distanceKm,
+      address: address ?? this.address,
+      neighborhood: neighborhood ?? this.neighborhood,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      isOpen: isOpen ?? this.isOpen,
+      imageUrl: imageUrl ?? this.imageUrl,
+      phone: phone ?? this.phone,
+      closingTime: closingTime ?? this.closingTime,
+      openTime: openTime ?? this.openTime,
+      ownerName: ownerName ?? this.ownerName,
+      email: email ?? this.email,
+      description: description ?? this.description,
+    );
+  }
+
   factory ShopModel.empty() {
     return const ShopModel(
       id: 'shop_default',

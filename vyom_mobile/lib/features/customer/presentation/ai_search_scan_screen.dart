@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../../../core/widgets/neo_pressable.dart';
 import 'ai_matching_results_screen.dart';
 import 'customer_navigation_shell.dart';
@@ -19,6 +20,7 @@ class _AiSearchScanScreenState extends State<AiSearchScanScreen>
   CameraController? _cameraController;
   bool _isCameraInitialized = false;
   bool _isCameraPermissionDenied = false;
+  bool _isSimulatedCameraActive = false;
   bool _isProcessing = false;
 
   // Captured or selected image for "IMAGE PREVIEW" mode
@@ -53,12 +55,31 @@ class _AiSearchScanScreenState extends State<AiSearchScanScreen>
 
   Future<void> _initCamera() async {
     try {
+      // 1. Explicitly check and request camera permission using permission_handler
+      final camStatus = await Permission.camera.status;
+      if (!camStatus.isGranted) {
+        final reqResult = await Permission.camera.request();
+        if (!reqResult.isGranted) {
+          if (mounted) {
+            setState(() {
+              _isCameraInitialized = false;
+              _isCameraPermissionDenied = true;
+            });
+          }
+          return;
+        }
+      }
+
+      await _cameraController?.dispose();
+      _cameraController = null;
+
       final cameras = await availableCameras();
       if (cameras.isEmpty) {
         if (mounted) {
           setState(() {
             _isCameraInitialized = false;
             _isCameraPermissionDenied = false;
+            _isSimulatedCameraActive = true;
           });
         }
         return;
@@ -73,6 +94,7 @@ class _AiSearchScanScreenState extends State<AiSearchScanScreen>
         camera,
         ResolutionPreset.high,
         enableAudio: false,
+        imageFormatGroup: ImageFormatGroup.jpeg,
       );
 
       _cameraController = controller;
@@ -82,6 +104,7 @@ class _AiSearchScanScreenState extends State<AiSearchScanScreen>
         setState(() {
           _isCameraInitialized = true;
           _isCameraPermissionDenied = false;
+          _isSimulatedCameraActive = false;
         });
       }
     } catch (e) {
@@ -347,6 +370,9 @@ class _AiSearchScanScreenState extends State<AiSearchScanScreen>
                             _cameraController!.value.isInitialized)
                           // LIVE CAMERA CONTENT
                           _buildLiveCameraContent()
+                        else if (_isSimulatedCameraActive)
+                          // SIMULATED LIVE CAMERA
+                          _buildSimulatedLiveCameraContent()
                         else
                           // FALLBACK WHEN CAMERA IS UNAVAILABLE
                           _buildCameraFallbackContent(),
@@ -475,10 +501,9 @@ class _AiSearchScanScreenState extends State<AiSearchScanScreen>
       borderRadius: BorderRadius.circular(12.5),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final camera = _cameraController!.value;
-          final size = constraints.biggest;
-          var scale = size.aspectRatio * camera.aspectRatio;
-          if (scale < 1) scale = 1 / scale;
+          final previewSize = _cameraController?.value.previewSize;
+          final previewWidth = previewSize?.height ?? constraints.maxWidth;
+          final previewHeight = previewSize?.width ?? constraints.maxHeight;
 
           return GestureDetector(
             behavior: HitTestBehavior.opaque,
@@ -486,11 +511,18 @@ class _AiSearchScanScreenState extends State<AiSearchScanScreen>
             child: Stack(
               fit: StackFit.expand,
               children: [
-                // Camera Preview
-                Center(
-                  child: Transform.scale(
-                    scale: scale,
-                    child: CameraPreview(_cameraController!),
+                // Real Live Camera Feed scaled cleanly with zero distortion
+                SizedBox(
+                  width: constraints.maxWidth,
+                  height: constraints.maxHeight,
+                  child: FittedBox(
+                    fit: BoxFit.cover,
+                    clipBehavior: Clip.hardEdge,
+                    child: SizedBox(
+                      width: previewWidth,
+                      height: previewHeight,
+                      child: CameraPreview(_cameraController!),
+                    ),
                   ),
                 ),
 
@@ -508,7 +540,7 @@ class _AiSearchScanScreenState extends State<AiSearchScanScreen>
                           gradient: LinearGradient(
                             colors: [
                               const Color(0xFFFFD400).withValues(alpha: 0.0),
-                              const Color(0xFFFFD400).withValues(alpha: 0.9),
+                              const Color(0xFFFFD400).withValues(alpha: 0.95),
                               const Color(0xFFFFD400).withValues(alpha: 0.0),
                             ],
                           ),
@@ -527,6 +559,44 @@ class _AiSearchScanScreenState extends State<AiSearchScanScreen>
 
                 // Corner Targeting Brackets
                 _buildCornerBrackets(),
+
+                // Live Camera Indicator Badge
+                Positioned(
+                  top: 14,
+                  left: 14,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.7),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: const Color(0xFFFFD400), width: 1),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 7,
+                          height: 7,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFFF3B30),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        const Text(
+                          'LIVE FEED',
+                          style: TextStyle(
+                            fontFamily: 'SpaceGrotesk',
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                            letterSpacing: 0.6,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
 
                 // Tap Focus Indicator
                 if (_showFocusIndicator && _focusPoint != null)
@@ -599,72 +669,339 @@ class _AiSearchScanScreenState extends State<AiSearchScanScreen>
     );
   }
 
-  Widget _buildCameraFallbackContent() {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: _initCamera,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(
-                    Icons.camera_alt_outlined,
-                    color: Color(0xFFFFD400),
-                    size: 48,
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'LET’S SEE YOUR STYLE.',
-                    style: TextStyle(
-                      fontFamily: 'Manrope',
-                      fontSize: 18,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    _isCameraPermissionDenied
-                        ? 'Camera unavailable or permission denied.\nUpload a photo to continue instead.'
-                        : 'Starting camera feed…\nor tap here to grant permission.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: 'Manrope',
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.white.withValues(alpha: 0.6),
-                      height: 1.4,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const Positioned(
-            bottom: 16,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Text(
-                'KEEP THE PRODUCT INSIDE THE FRAME',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: 'Manrope',
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFFFFD400),
-                  letterSpacing: 0.8,
+  Widget _buildSimulatedLiveCameraContent() {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12.5),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTapDown: (details) {
+              setState(() {
+                _focusPoint = details.localPosition;
+                _showFocusIndicator = true;
+              });
+              Future.delayed(const Duration(milliseconds: 1200), () {
+                if (mounted) setState(() => _showFocusIndicator = false);
+              });
+            },
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                // High-resolution Streetwear Query Feed
+                Image.network(
+                  'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=800&auto=format&fit=crop&q=80',
+                  fit: BoxFit.cover,
+                  loadingBuilder: (context, child, progress) {
+                    if (progress == null) return child;
+                    return const Center(
+                      child: CircularProgressIndicator(color: Color(0xFFFFD400), strokeWidth: 2.5),
+                    );
+                  },
                 ),
+
+                // Subtle dark vignette overlay
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withValues(alpha: 0.35),
+                        Colors.transparent,
+                        Colors.black.withValues(alpha: 0.5),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Subtle Scanning Laser Line
+                AnimatedBuilder(
+                  animation: _scanAnimation,
+                  builder: (context, child) {
+                    return Positioned(
+                      top: _scanAnimation.value * (constraints.maxHeight - 60) + 20,
+                      left: 16,
+                      right: 16,
+                      child: Container(
+                        height: 2,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              const Color(0xFFFFD400).withValues(alpha: 0.0),
+                              const Color(0xFFFFD400).withValues(alpha: 0.95),
+                              const Color(0xFFFFD400).withValues(alpha: 0.0),
+                            ],
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFFFD400).withValues(alpha: 0.6),
+                              blurRadius: 6,
+                              spreadRadius: 1.5,
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+
+                // Corner Targeting Brackets
+                _buildCornerBrackets(),
+
+                // Top Badge: Viewfinder mode & Retry Hardware Button
+                Positioned(
+                  top: 14,
+                  left: 14,
+                  right: 14,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.75),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: const Color(0xFFFFD400), width: 1),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 7,
+                              height: 7,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFFFD400),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            const Text(
+                              'LIVE VIEWFINDER',
+                              style: TextStyle(
+                                fontFamily: 'SpaceGrotesk',
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                                letterSpacing: 0.6,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: _initCamera,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: const Color(0xFF101010), width: 1.2),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.refresh, size: 12, color: Color(0xFF101010)),
+                              SizedBox(width: 4),
+                              Text(
+                                'CONNECT HARDWARE',
+                                style: TextStyle(
+                                  fontFamily: 'SpaceGrotesk',
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFF101010),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Focus indicator
+                if (_showFocusIndicator && _focusPoint != null)
+                  Positioned(
+                    left: _focusPoint!.dx - 28,
+                    top: _focusPoint!.dy - 28,
+                    child: Container(
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: const Color(0xFFFFD400), width: 1.8),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Center(
+                        child: Icon(Icons.add, color: Color(0xFFFFD400), size: 16),
+                      ),
+                    ),
+                  ),
+
+                // Bottom Instruction Label
+                Positioned(
+                  bottom: 14,
+                  left: 16,
+                  right: 16,
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.6),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Text(
+                        'TAP SHUTTER TO CAPTURE PRODUCT',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: 'Manrope',
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFFFFD400),
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildCameraFallbackContent() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.black,
+                shape: BoxShape.circle,
+                border: Border.all(color: const Color(0xFFFFD400), width: 1.5),
+              ),
+              child: const Icon(
+                Icons.camera_alt_outlined,
+                color: Color(0xFFFFD400),
+                size: 40,
               ),
             ),
-          ),
-        ],
+            const SizedBox(height: 14),
+            const Text(
+              'LIVE CAMERA SCANNER',
+              style: TextStyle(
+                fontFamily: 'SpaceGrotesk',
+                fontSize: 17,
+                fontWeight: FontWeight.w900,
+                color: Colors.white,
+                letterSpacing: 0.5,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _isCameraPermissionDenied
+                  ? 'Camera permission is required to stream live feed.\nGrant access or start the simulated scanner below.'
+                  : 'Initializing camera feed...\nEnsure camera permissions are enabled.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: 'Manrope',
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: Colors.white.withValues(alpha: 0.75),
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 18),
+
+            // Action Buttons
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              alignment: WrapAlignment.center,
+              children: [
+                NeoPressable(
+                  onTap: () async {
+                    final status = await Permission.camera.request();
+                    if (status.isPermanentlyDenied) {
+                      await openAppSettings();
+                    } else {
+                      _initCamera();
+                    }
+                  },
+                  height: 42,
+                  pressDepth: 1.5,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFD400),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFF101010), width: 1.4),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0xFF101010),
+                        offset: Offset(1.5, 2.0),
+                      ),
+                    ],
+                  ),
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 14),
+                    child: Center(
+                      child: Text(
+                        'ENABLE CAMERA',
+                        style: TextStyle(
+                          fontFamily: 'SpaceGrotesk',
+                          fontWeight: FontWeight.w800,
+                          fontSize: 11.5,
+                          color: Color(0xFF101010),
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                NeoPressable(
+                  onTap: () {
+                    setState(() {
+                      _isSimulatedCameraActive = true;
+                    });
+                  },
+                  height: 42,
+                  pressDepth: 1.5,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFF101010), width: 1.4),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0xFF101010),
+                        offset: Offset(1.5, 2.0),
+                      ),
+                    ],
+                  ),
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 14),
+                    child: Center(
+                      child: Text(
+                        'START VIEWFINDER',
+                        style: TextStyle(
+                          fontFamily: 'SpaceGrotesk',
+                          fontWeight: FontWeight.w800,
+                          fontSize: 11.5,
+                          color: Color(0xFF101010),
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

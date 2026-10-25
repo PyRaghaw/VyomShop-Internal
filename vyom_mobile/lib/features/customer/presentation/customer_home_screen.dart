@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:geolocator/geolocator.dart';
 import 'ai_search_scan_screen.dart';
 import 'search_results_screen.dart';
 import 'product_detail_screen.dart';
@@ -8,6 +9,7 @@ import '../../../core/data/mock_data.dart';
 import '../../../core/models/shop_model.dart';
 import '../../../core/models/product_model.dart';
 import '../../../core/services/customer_service.dart';
+import '../../../core/services/location_service.dart';
 import '../../../core/services/product_service.dart';
 import '../../../core/services/shop_service.dart';
 import '../../../core/widgets/neo_pressable.dart';
@@ -47,6 +49,8 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
     {'name': 'Kidswear', 'icon': 'assets/images/kids_icon.svg'},
   ];
 
+  List<ProductModel> _allProducts = [];
+  List<ShopModel> _allShops = [];
   List<ProductModel> _popularProducts = [];
   List<ShopModel> _nearbyShops = [];
   bool _isLoadingData = true;
@@ -55,7 +59,48 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   void initState() {
     super.initState();
     _selectedNeighborhood = CustomerService().neighborhood;
+    // Pre-populate with rich mock data so the app displays immediately
+    _allProducts = MockData.products;
+    _allShops = MockData.shops;
+    _applyLocationFilter();
+    _initLiveLocation();
     _loadData();
+  }
+
+  /// Automatically requests and checks device GPS location on launch
+  Future<void> _initLiveLocation() async {
+    try {
+      final pos = await LocationService().determinePosition(requestIfNeeded: true);
+      if (pos != null && mounted) {
+        final nearest = LocationService().findNearestNeighborhood(pos.latitude, pos.longitude);
+        setState(() {
+          _selectedNeighborhood = nearest.fullName;
+        });
+        CustomerService().neighborhood = nearest.fullName;
+        _applyLocationFilter(userPosition: pos);
+      }
+    } catch (_) {}
+  }
+
+  /// Dynamically filters and recalculates shop distance for current location
+  void _applyLocationFilter({Position? userPosition}) {
+    final pos = userPosition ?? LocationService().currentPosition;
+    final rankedShops = LocationService().filterAndRankShops(
+      _allShops.isNotEmpty ? _allShops : MockData.shops,
+      _selectedNeighborhood,
+      userPosition: pos,
+    );
+    final rankedProducts = LocationService().filterAndRankProducts(
+      _allProducts.isNotEmpty ? _allProducts : MockData.products,
+      rankedShops,
+    );
+    if (mounted) {
+      setState(() {
+        _nearbyShops = rankedShops;
+        _popularProducts = rankedProducts;
+        _isLoadingData = false;
+      });
+    }
   }
 
   Future<void> _loadData() async {
@@ -63,19 +108,15 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
       final products = await ProductService().getProducts();
       final shops = await ShopService().getNearbyShops();
       if (mounted) {
-        setState(() {
-          _popularProducts = products;
-          _nearbyShops = shops;
-          _isLoadingData = false;
-        });
+        _allProducts = products.isNotEmpty ? products : MockData.products;
+        _allShops = shops.isNotEmpty ? shops : MockData.shops;
+        _applyLocationFilter();
       }
     } catch (_) {
       if (mounted) {
-        setState(() {
-          _popularProducts = MockData.products;
-          _nearbyShops = MockData.shops;
-          _isLoadingData = false;
-        });
+        _allProducts = MockData.products;
+        _allShops = MockData.shops;
+        _applyLocationFilter();
       }
     }
   }
@@ -126,6 +167,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (ctx) {
         return Container(
           decoration: const BoxDecoration(
@@ -140,45 +182,166 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'SHOPPING NEAR',
-                style: TextStyle(
-                  fontFamily: 'Manrope',
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF939393),
-                  letterSpacing: 0.5,
-                ),
-              ),
-              const SizedBox(height: 6),
-              const Text(
-                'Choose your shopping neighborhood',
-                style: TextStyle(
-                  fontFamily: 'SpaceGrotesk',
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF101010),
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'SHOPPING NEAR',
+                        style: TextStyle(
+                          fontFamily: 'Manrope',
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF939393),
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Select Neighborhood',
+                        style: TextStyle(
+                          fontFamily: 'SpaceGrotesk',
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF101010),
+                        ),
+                      ),
+                    ],
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.of(ctx).pop(),
+                    icon: const Icon(Icons.close, color: Color(0xFF101010)),
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
+
+              // "USE LIVE GPS LOCATION" Button
+              NeoPressable(
+                onTap: () async {
+                  Navigator.of(ctx).pop();
+                  final pos = await LocationService().determinePosition(requestIfNeeded: true);
+                  if (pos != null && mounted) {
+                    final nearest = LocationService().findNearestNeighborhood(pos.latitude, pos.longitude);
+                    setState(() {
+                      _selectedNeighborhood = nearest.fullName;
+                    });
+                    CustomerService().neighborhood = nearest.fullName;
+                    _applyLocationFilter(userPosition: pos);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Live location updated: ${nearest.fullName}',
+                          style: const TextStyle(
+                            fontFamily: 'Manrope',
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                        backgroundColor: const Color(0xFF101010),
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  }
+                },
+                height: 54,
+                pressDepth: 1.5,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFD400),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFF101010), width: 1.6),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0xFF101010),
+                      offset: Offset(2.0, 2.5),
+                    ),
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF101010),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(Icons.my_location, size: 18, color: Color(0xFFFFD400)),
+                      ),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'USE LIVE GPS LOCATION',
+                              style: TextStyle(
+                                fontFamily: 'SpaceGrotesk',
+                                fontWeight: FontWeight.w800,
+                                fontSize: 13,
+                                color: Color(0xFF101010),
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            Text(
+                              'Automatically detect closest boutiques',
+                              style: TextStyle(
+                                fontFamily: 'Manrope',
+                                fontWeight: FontWeight.w600,
+                                fontSize: 10.5,
+                                color: Color(0xFF555555),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.arrow_forward_ios, size: 14, color: Color(0xFF101010)),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+              const Divider(color: Color(0xFFE2DDD0), thickness: 1.2),
+              const SizedBox(height: 8),
+
               ..._neighborhoods.map((n) {
                 final isSelected = n == _selectedNeighborhood;
                 return ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.location_on_outlined, color: Color(0xFF101010)),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  leading: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: isSelected ? const Color(0xFFFFD400) : Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFF101010), width: 1.2),
+                    ),
+                    child: const Icon(
+                      Icons.storefront_outlined,
+                      size: 18,
+                      color: Color(0xFF101010),
+                    ),
+                  ),
                   title: Text(
                     n,
                     style: TextStyle(
                       fontFamily: 'Manrope',
                       fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                       color: const Color(0xFF101010),
+                      fontSize: 14,
                     ),
                   ),
                   trailing: isSelected
-                      ? const Icon(Icons.check_circle, color: Color(0xFFFFD400))
+                      ? const Icon(Icons.check_circle, color: Color(0xFF101010), size: 22)
                       : null,
                   onTap: () {
                     setState(() => _selectedNeighborhood = n);
+                    CustomerService().neighborhood = n;
+                    _applyLocationFilter();
                     Navigator.of(ctx).pop();
                   },
                 );
@@ -300,6 +463,25 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                               ),
                             ),
                           ),
+                          if (LocationService().isLiveGpsActive) ...[
+                            const SizedBox(width: 4),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF101010),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: const Text(
+                                'GPS',
+                                style: TextStyle(
+                                  fontFamily: 'SpaceGrotesk',
+                                  fontSize: 8.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFFFFD400),
+                                ),
+                              ),
+                            ),
+                          ],
                           const SizedBox(width: 4),
                           const Icon(
                             Icons.keyboard_arrow_down,
