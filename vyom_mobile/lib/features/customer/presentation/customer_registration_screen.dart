@@ -7,10 +7,12 @@ import 'customer_navigation_shell.dart';
 
 class CustomerRegistrationScreen extends StatefulWidget {
   final String? initialPhone;
+  final bool isFromProfile;
 
   const CustomerRegistrationScreen({
     super.key,
     this.initialPhone,
+    this.isFromProfile = false,
   });
 
   @override
@@ -150,6 +152,8 @@ class _CustomerRegistrationScreenState extends State<CustomerRegistrationScreen>
       return;
     }
 
+    final nav = Navigator.of(context);
+
     // Save profile to CustomerService and SharedPreferences
     await CustomerService().saveProfile(
       name: name,
@@ -161,8 +165,13 @@ class _CustomerRegistrationScreenState extends State<CustomerRegistrationScreen>
 
     if (!mounted) return;
 
+    if (widget.isFromProfile && nav.canPop()) {
+      nav.pop(true);
+      return;
+    }
+
     // Navigate to CustomerNavigationShell
-    Navigator.of(context).pushAndRemoveUntil(
+    nav.pushAndRemoveUntil(
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
             const CustomerNavigationShell(),
@@ -532,8 +541,15 @@ class _CustomerRegistrationScreenState extends State<CustomerRegistrationScreen>
               // Skip option
               Center(
                 child: GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).pushAndRemoveUntil(
+                  onTap: () async {
+                    final nav = Navigator.of(context);
+                    await CustomerService().skipRegistration();
+                    if (!mounted) return;
+                    if (widget.isFromProfile && nav.canPop()) {
+                      nav.pop(false);
+                      return;
+                    }
+                    nav.pushAndRemoveUntil(
                       PageRouteBuilder(
                         pageBuilder: (context, animation, secondaryAnimation) =>
                             const CustomerNavigationShell(),

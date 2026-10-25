@@ -5,9 +5,9 @@ class CustomerService {
   factory CustomerService() => _instance;
   CustomerService._internal();
 
-  String name = 'Alex Kumar';
-  String phone = '+91 98765 43210';
-  String email = 'alex@example.com';
+  String name = '';
+  String phone = '';
+  String email = '';
   String neighborhood = 'Salt Lake, Kolkata';
   List<String> favoriteCategories = ['Clothing', 'Footwear'];
   bool isRegistered = false;
@@ -19,7 +19,7 @@ class CustomerService {
     } else if (parts.isNotEmpty && parts[0].isNotEmpty) {
       return parts[0][0].toUpperCase();
     }
-    return 'AK';
+    return 'GS';
   }
 
   Future<void> saveProfile({
@@ -51,15 +51,59 @@ class CustomerService {
     } catch (_) {}
   }
 
+  Future<void> skipRegistration() async {
+    isRegistered = false;
+    name = '';
+    phone = '';
+    email = '';
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('customer_is_registered', false);
+      await prefs.remove('customer_name');
+      await prefs.remove('customer_phone');
+      await prefs.remove('customer_email');
+    } catch (_) {}
+  }
+
+  Future<void> resetProfile() async {
+    isRegistered = false;
+    name = '';
+    phone = '';
+    email = '';
+    neighborhood = 'Salt Lake, Kolkata';
+    favoriteCategories = ['Clothing', 'Footwear'];
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('customer_name');
+      await prefs.remove('customer_phone');
+      await prefs.remove('customer_email');
+      await prefs.remove('customer_neighborhood');
+      await prefs.remove('customer_categories');
+      await prefs.setBool('customer_is_registered', false);
+    } catch (_) {}
+  }
+
   Future<void> loadProfile() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      name = prefs.getString('customer_name') ?? name;
-      phone = prefs.getString('customer_phone') ?? phone;
-      email = prefs.getString('customer_email') ?? email;
-      neighborhood = prefs.getString('customer_neighborhood') ?? neighborhood;
-      favoriteCategories = prefs.getStringList('customer_categories') ?? favoriteCategories;
-      isRegistered = prefs.getBool('customer_is_registered') ?? false;
+      if (prefs.containsKey('customer_is_registered')) {
+        isRegistered = prefs.getBool('customer_is_registered') ?? false;
+      }
+      if (prefs.containsKey('customer_name')) {
+        name = prefs.getString('customer_name') ?? '';
+      }
+      if (prefs.containsKey('customer_phone')) {
+        phone = prefs.getString('customer_phone') ?? '';
+      }
+      if (prefs.containsKey('customer_email')) {
+        email = prefs.getString('customer_email') ?? '';
+      }
+      if (prefs.containsKey('customer_neighborhood')) {
+        neighborhood = prefs.getString('customer_neighborhood') ?? neighborhood;
+      }
+      if (prefs.containsKey('customer_categories')) {
+        favoriteCategories = prefs.getStringList('customer_categories') ?? favoriteCategories;
+      }
     } catch (_) {}
   }
 }
