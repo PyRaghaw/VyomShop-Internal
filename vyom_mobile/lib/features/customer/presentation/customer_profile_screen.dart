@@ -16,6 +16,19 @@ class CustomerProfileScreen extends StatefulWidget {
 }
 
 class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
+  bool _neighborhoodAlerts = true;
+  bool _cameraPermission = true;
+  bool _locationPermission = true;
+  bool _storagePermission = true;
+
+  final List<String> _searchHistory = [
+    'Floral Kurtis',
+    'Embroidered Lehenga',
+    'Leather Mojaris',
+    'Silk Saree',
+    'Denim Jacket',
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -37,11 +50,625 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
   Future<void> _navigateToLogin() async {
     await Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => const PhoneLoginScreen(),
+        builder: (context) => const PhoneLoginScreen(isFromProfile: true),
       ),
     );
     await CustomerService().loadProfile();
     if (mounted) setState(() {});
+  }
+
+  void _showNeoSnackBar(String text) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          text,
+          style: const TextStyle(
+            fontFamily: 'Manrope',
+            fontWeight: FontWeight.w700,
+            fontSize: 13,
+            color: Color(0xFF101010),
+          ),
+        ),
+        backgroundColor: const Color(0xFFFFD400),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(milliseconds: 1600),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+          side: const BorderSide(color: Color(0xFF101010), width: 1.5),
+        ),
+      ),
+    );
+  }
+
+  void _showSearchHistoryModal() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Container(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+              decoration: const BoxDecoration(
+                color: Color(0xFFF7F3E8),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                border: Border(
+                  top: BorderSide(color: Color(0xFF101010), width: 2.5),
+                ),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 44,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF101010),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'SEARCH HISTORY',
+                        style: TextStyle(
+                          fontFamily: 'SpaceGrotesk',
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF101010),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () => Navigator.of(context).pop(),
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: const Color(0xFF101010), width: 1.5),
+                          ),
+                          child: const Icon(Icons.close, size: 18, color: Color(0xFF101010)),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Recent boutique queries and visual lookups',
+                    style: TextStyle(
+                      fontFamily: 'Manrope',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF6B6B65),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  if (_searchHistory.isEmpty)
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      alignment: Alignment.center,
+                      child: const Column(
+                        children: [
+                          Icon(Icons.history_toggle_off, size: 36, color: Color(0xFF939393)),
+                          SizedBox(height: 8),
+                          Text(
+                            'No recent searches found',
+                            style: TextStyle(
+                              fontFamily: 'Manrope',
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF6B6B65),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  else ...[
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _searchHistory.map((item) {
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: const Color(0xFF101010), width: 1.4),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color(0xFF101010),
+                                offset: Offset(1.5, 1.5),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.search, size: 14, color: Color(0xFF101010)),
+                              const SizedBox(width: 6),
+                              Text(
+                                item,
+                                style: const TextStyle(
+                                  fontFamily: 'Manrope',
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF101010),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              GestureDetector(
+                                onTap: () {
+                                  setModalState(() {
+                                    _searchHistory.remove(item);
+                                  });
+                                  setState(() {});
+                                },
+                                child: const Icon(Icons.close, size: 14, color: Color(0xFF939393)),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 20),
+                    NeoPressable(
+                      onTap: () {
+                        setModalState(() {
+                          _searchHistory.clear();
+                        });
+                        setState(() {});
+                        _showNeoSnackBar('Search history cleared!');
+                      },
+                      height: 46,
+                      width: double.infinity,
+                      pressDepth: 1.5,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFF101010), width: 1.6),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0xFF101010),
+                            offset: Offset(2.0, 2.0),
+                          ),
+                        ],
+                      ),
+                      child: const Center(
+                        child: Text(
+                          'CLEAR ALL HISTORY',
+                          style: TextStyle(
+                            fontFamily: 'SpaceGrotesk',
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.5,
+                            color: Colors.redAccent,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showPrivacyPermissionsModal() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Container(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+              decoration: const BoxDecoration(
+                color: Color(0xFFF7F3E8),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                border: Border(
+                  top: BorderSide(color: Color(0xFF101010), width: 2.5),
+                ),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 44,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF101010),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'PRIVACY & PERMISSIONS',
+                        style: TextStyle(
+                          fontFamily: 'SpaceGrotesk',
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF101010),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () => Navigator.of(context).pop(),
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: const Color(0xFF101010), width: 1.5),
+                          ),
+                          child: const Icon(Icons.close, size: 18, color: Color(0xFF101010)),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Control device permissions used by Vyom',
+                    style: TextStyle(
+                      fontFamily: 'Manrope',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF6B6B65),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildPermissionTile(
+                    icon: Icons.camera_alt_outlined,
+                    title: 'Camera Access',
+                    subtitle: 'Visual Search & taking photos of outfits',
+                    value: _cameraPermission,
+                    onChanged: (val) {
+                      setModalState(() => _cameraPermission = val);
+                      setState(() => _cameraPermission = val);
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  _buildPermissionTile(
+                    icon: Icons.location_on_outlined,
+                    title: 'Location Services',
+                    subtitle: 'Show nearby boutiques within your neighborhood',
+                    value: _locationPermission,
+                    onChanged: (val) {
+                      setModalState(() => _locationPermission = val);
+                      setState(() => _locationPermission = val);
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  _buildPermissionTile(
+                    icon: Icons.photo_library_outlined,
+                    title: 'Storage & Gallery',
+                    subtitle: 'Pick existing images for visual style matching',
+                    value: _storagePermission,
+                    onChanged: (val) {
+                      setModalState(() => _storagePermission = val);
+                      setState(() => _storagePermission = val);
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  NeoPressable(
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      _showNeoSnackBar('Permission preferences updated!');
+                    },
+                    height: 46,
+                    width: double.infinity,
+                    pressDepth: 1.5,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFD400),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: const Color(0xFF101010), width: 1.6),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0xFF101010),
+                          offset: Offset(2.0, 2.0),
+                        ),
+                      ],
+                    ),
+                    child: const Center(
+                      child: Text(
+                        'SAVE SETTINGS',
+                        style: TextStyle(
+                          fontFamily: 'SpaceGrotesk',
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.5,
+                          color: Color(0xFF101010),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showHowVisualSearchWorksModal() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return Container(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+          decoration: const BoxDecoration(
+            color: Color(0xFFF7F3E8),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            border: Border(
+              top: BorderSide(color: Color(0xFF101010), width: 2.5),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 44,
+                  height: 5,
+                  decoration: BoxDecoration(
+                        color: const Color(0xFF101010),
+                        borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'HOW VISUAL SEARCH WORKS',
+                    style: TextStyle(
+                      fontFamily: 'SpaceGrotesk',
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF101010),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => Navigator.of(context).pop(),
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: const Color(0xFF101010), width: 1.5),
+                      ),
+                      child: const Icon(Icons.close, size: 18, color: Color(0xFF101010)),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'Find any outfit in local boutiques in 4 simple steps',
+                style: TextStyle(
+                  fontFamily: 'Manrope',
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF6B6B65),
+                ),
+              ),
+              const SizedBox(height: 16),
+              _buildVisualSearchStep(
+                stepNumber: '1',
+                icon: Icons.camera_alt_outlined,
+                title: 'Camera Kholo',
+                subtitle: 'Tap the camera scanner icon in the search bar or boutique page',
+              ),
+              const SizedBox(height: 10),
+              _buildVisualSearchStep(
+                stepNumber: '2',
+                icon: Icons.camera_outlined,
+                title: 'Picture Click Karo',
+                subtitle: 'Snap a photo of any outfit, dress, shoe, or reference style',
+              ),
+              const SizedBox(height: 10),
+              _buildVisualSearchStep(
+                stepNumber: '3',
+                icon: Icons.crop_free_outlined,
+                title: 'Item Select Karo',
+                subtitle: 'Tap or box the specific item (footwear, clothing, or accessory)',
+              ),
+              const SizedBox(height: 10),
+              _buildVisualSearchStep(
+                stepNumber: '4',
+                icon: Icons.search_rounded,
+                title: 'Press Search & Discover',
+                subtitle: 'Get instant matching products available in nearby boutiques!',
+              ),
+              const SizedBox(height: 20),
+              NeoPressable(
+                onTap: () => Navigator.of(context).pop(),
+                height: 46,
+                width: double.infinity,
+                pressDepth: 1.5,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFD400),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xFF101010), width: 1.6),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0xFF101010),
+                      offset: Offset(2.0, 2.0),
+                    ),
+                  ],
+                ),
+                child: const Center(
+                  child: Text(
+                    'GOT IT, LET’S SHOP',
+                    style: TextStyle(
+                      fontFamily: 'SpaceGrotesk',
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.5,
+                      color: Color(0xFF101010),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPermissionTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF101010), width: 1.4),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0xFF101010),
+            offset: Offset(1.5, 1.5),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: const Color(0xFF101010), size: 22),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontFamily: 'Manrope',
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF101010),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    fontFamily: 'Manrope',
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFF6B6B65),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: value,
+            activeThumbColor: const Color(0xFF101010),
+            activeTrackColor: const Color(0xFFFFD400),
+            onChanged: onChanged,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVisualSearchStep({
+    required String stepNumber,
+    required IconData icon,
+    required String title,
+    required String subtitle,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF101010), width: 1.4),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0xFF101010),
+            offset: Offset(1.5, 1.5),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFD400),
+              shape: BoxShape.circle,
+              border: Border.all(color: const Color(0xFF101010), width: 1.5),
+            ),
+            child: Center(
+              child: Text(
+                stepNumber,
+                style: const TextStyle(
+                  fontFamily: 'SpaceGrotesk',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF101010),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontFamily: 'SpaceGrotesk',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF101010),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    fontFamily: 'Manrope',
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFF6B6B65),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(icon, size: 20, color: const Color(0xFF101010)),
+        ],
+      ),
+    );
   }
 
   @override
@@ -320,10 +947,15 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
                 title: 'Neighborhood Alerts',
                 subtitle: 'New boutique additions and local updates',
                 trailing: Switch(
-                  value: true,
+                  value: _neighborhoodAlerts,
                   activeThumbColor: const Color(0xFF101010),
                   activeTrackColor: const Color(0xFFFFD400),
-                  onChanged: (context) {},
+                  onChanged: (val) {
+                    setState(() => _neighborhoodAlerts = val);
+                    _showNeoSnackBar(
+                      val ? 'Neighborhood alerts enabled' : 'Neighborhood alerts disabled',
+                    );
+                  },
                 ),
               ),
               const SizedBox(height: 10),
@@ -331,21 +963,21 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
                 icon: Icons.history,
                 title: 'Search History',
                 subtitle: 'Clear recent searches and image scans',
-                onTap: () {},
+                onTap: _showSearchHistoryModal,
               ),
               const SizedBox(height: 10),
               _buildNeoSettingTile(
                 icon: Icons.shield_outlined,
                 title: 'Privacy & Permissions',
                 subtitle: 'Camera, location, and storage settings',
-                onTap: () {},
+                onTap: _showPrivacyPermissionsModal,
               ),
               const SizedBox(height: 10),
               _buildNeoSettingTile(
                 icon: Icons.help_outline,
                 title: 'How Visual Search Works',
                 subtitle: 'Learn about our local computer vision matching',
-                onTap: () {},
+                onTap: _showHowVisualSearchWorksModal,
               ),
 
               const SizedBox(height: 24),

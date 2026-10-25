@@ -81,4 +81,73 @@ void main() {
     expect(find.text('GUEST SHOPPER'), findsNothing);
     expect(find.text('Alex Kumar'), findsNothing);
   });
+
+  testWidgets('Preferences and Support bottom sheets open properly and alerts can toggle', (tester) async {
+    MockData.enableMockData = true;
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 2.0;
+
+    addTearDown(() {
+      MockData.enableMockData = false;
+      tester.view.resetPhysicalSize();
+    });
+
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: CustomerProfileScreen(),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    // 1. Toggle alerts
+    final switches = find.byType(Switch);
+    expect(switches, findsOneWidget);
+    await tester.tap(switches.first);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    // 2. Open Search History Modal
+    await tester.tap(find.text('Search History'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text('SEARCH HISTORY'), findsOneWidget);
+    expect(find.text('CLEAR ALL HISTORY'), findsOneWidget);
+
+    // Close modal
+    await tester.tap(find.byIcon(Icons.close).first);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    // 3. Open Privacy & Permissions Modal
+    await tester.tap(find.text('Privacy & Permissions'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text('PRIVACY & PERMISSIONS'), findsOneWidget);
+    expect(find.text('Camera Access'), findsOneWidget);
+    expect(find.text('SAVE SETTINGS'), findsOneWidget);
+
+    // Close modal
+    await tester.tap(find.text('SAVE SETTINGS'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    // 4. Open How Visual Search Works Modal
+    await tester.tap(find.text('How Visual Search Works'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text('HOW VISUAL SEARCH WORKS'), findsOneWidget);
+    expect(find.text('Camera Kholo'), findsOneWidget);
+    expect(find.text('Picture Click Karo'), findsOneWidget);
+    expect(find.text('Item Select Karo'), findsOneWidget);
+    expect(find.text('Press Search & Discover'), findsOneWidget);
+    expect(find.text('GOT IT, LET’S SHOP'), findsOneWidget);
+
+    await tester.tap(find.text('GOT IT, LET’S SHOP'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+  });
 }

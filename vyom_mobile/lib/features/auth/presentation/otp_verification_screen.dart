@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:pinput/pinput.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/services/customer_service.dart';
 import '../../../core/widgets/vyom_arrow.dart';
 import 'choose_role_screen.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
   final String phoneNumber;
+  final bool isFromProfile;
 
   const OtpVerificationScreen({
     super.key,
     required this.phoneNumber,
+    this.isFromProfile = false,
   });
 
   @override
@@ -29,12 +32,26 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     _pinController = TextEditingController();
   }
 
-  void _handleVerify() {
+  Future<void> _handleVerify() async {
     final code = _pinController.text.trim();
     if (code.length != 4) {
       setState(() {
         _errorMessage = 'Please enter the 4-digit verification code';
       });
+      return;
+    }
+
+    if (widget.isFromProfile) {
+      final nav = Navigator.of(context);
+      final customer = CustomerService();
+      await customer.saveProfile(
+        name: customer.name.isNotEmpty ? customer.name : 'Shopper',
+        phone: '+91 ${widget.phoneNumber}',
+        neighborhood: customer.neighborhood.isNotEmpty ? customer.neighborhood : 'Salt Lake, Kolkata',
+      );
+      if (!mounted) return;
+      int count = 0;
+      nav.popUntil((_) => count++ >= 2);
       return;
     }
 

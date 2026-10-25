@@ -4,7 +4,12 @@ import '../../../core/widgets/vyom_arrow.dart';
 import 'otp_verification_screen.dart';
 
 class PhoneLoginScreen extends StatefulWidget {
-  const PhoneLoginScreen({super.key});
+  final bool isFromProfile;
+
+  const PhoneLoginScreen({
+    super.key,
+    this.isFromProfile = false,
+  });
 
   @override
   State<PhoneLoginScreen> createState() => _PhoneLoginScreenState();
@@ -30,7 +35,10 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
     Navigator.of(context).push(
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
-            OtpVerificationScreen(phoneNumber: validPhone),
+            OtpVerificationScreen(
+              phoneNumber: validPhone,
+              isFromProfile: widget.isFromProfile,
+            ),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(opacity: animation, child: child);
         },
