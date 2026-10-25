@@ -19,6 +19,8 @@ class NearbyShopsScreen extends StatefulWidget {
 class _NearbyShopsScreenState extends State<NearbyShopsScreen> {
   String _selectedNeighborhood = 'Salt Lake, Kolkata';
   String _selectedCategory = 'All';
+  String _selectedPriceRange = 'Under ₹500';
+  String _selectedDistance = '5 km to 10 km';
   double _maxDistance = 10.0;
   final TextEditingController _searchController = TextEditingController();
   final Set<String> _favoriteShopNames = {};
@@ -157,141 +159,449 @@ class _NearbyShopsScreenState extends State<NearbyShopsScreen> {
   void _showFilterModal() {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) {
+        String tempCategory = _selectedCategory;
+        String tempPrice = _selectedPriceRange;
+        String tempDistance = _selectedDistance;
+
+        final categories = [
+          {'name': 'Clothing', 'icon': 'assets/images/clothing_icon.svg'},
+          {'name': 'Footwear', 'icon': 'assets/images/footwear_icon.svg'},
+          {'name': 'Accessories', 'icon': 'assets/images/acc_icon.svg'},
+          {'name': 'Jewellery', 'icon': 'assets/images/jewellery_icon.svg'},
+          {'name': 'Bags', 'icon': 'assets/images/bags_icon.svg'},
+          {'name': 'Sportswear', 'icon': 'assets/images/sports_icon.svg'},
+          {'name': 'Innerwear', 'icon': 'assets/images/innerwear_icon.svg'},
+          {'name': 'Kidswear', 'icon': 'assets/images/kids_icon.svg'},
+        ];
+
+        final priceRanges = [
+          'Under ₹500',
+          '₹500-₹1,000',
+          '₹1,000+',
+        ];
+
+        final distanceRanges = [
+          'Within 1 km',
+          '1 km to 3 km',
+          '3 km to 5 km',
+          '5 km to 10 km',
+        ];
+
         return StatefulBuilder(
           builder: (context, setModalState) {
             return Container(
-              padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
+              height: MediaQuery.of(context).size.height * 0.90,
               decoration: const BoxDecoration(
                 color: Color(0xFFF7F3E8),
                 borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-                border: Border(top: BorderSide(color: Color(0xFF101010), width: 2.5)),
+                border: Border(
+                  top: BorderSide(color: Color(0xFF101010), width: 2.5),
+                  left: BorderSide(color: Color(0xFF101010), width: 2.0),
+                  right: BorderSide(color: Color(0xFF101010), width: 2.0),
+                ),
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'FILTER SHOPS',
-                        style: TextStyle(
-                          fontFamily: 'SpaceGrotesk',
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF101010),
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () => Navigator.of(ctx).pop(),
-                        child: Container(
-                          width: 32,
-                          height: 32,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: const Color(0xFF101010), width: 1.5),
+              child: SafeArea(
+                top: false,
+                child: Column(
+                  children: [
+                    // Top Header + Close Button
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: const [
+                              Text(
+                                'FILTERS',
+                                style: TextStyle(
+                                  fontFamily: 'SpaceGrotesk',
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 20,
+                                  height: 1.0,
+                                  letterSpacing: 0.0,
+                                  color: Color(0xFF101010),
+                                ),
+                              ),
+                              SizedBox(height: 6),
+                              Text(
+                                'Find your perfect match',
+                                style: TextStyle(
+                                  fontFamily: 'Manrope',
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 12,
+                                  height: 1.0,
+                                  letterSpacing: 0.0,
+                                  color: Color(0xFF323232),
+                                ),
+                              ),
+                            ],
                           ),
-                          child: const Icon(Icons.close, size: 18, color: Color(0xFF101010)),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'MAXIMUM DISTANCE',
-                    style: TextStyle(
-                      fontFamily: 'Manrope',
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF939393),
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Within ${_maxDistance.toInt()} km',
-                        style: const TextStyle(
-                          fontFamily: 'SpaceGrotesk',
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF101010),
-                        ),
-                      ),
-                      Text(
-                        '${_maxDistance.toStringAsFixed(1)} km radius',
-                        style: const TextStyle(
-                          fontFamily: 'Manrope',
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF6B6B65),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SliderTheme(
-                    data: SliderTheme.of(context).copyWith(
-                      activeTrackColor: const Color(0xFF101010),
-                      inactiveTrackColor: const Color(0xFFE0DDD5),
-                      thumbColor: const Color(0xFFFFD400),
-                      overlayColor: const Color(0xFFFFD400).withValues(alpha: 0.2),
-                      trackHeight: 6,
-                      thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
-                    ),
-                    child: Slider(
-                      value: _maxDistance,
-                      min: 1.0,
-                      max: 15.0,
-                      divisions: 14,
-                      onChanged: (val) {
-                        setModalState(() => _maxDistance = val);
-                        setState(() => _maxDistance = val);
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  NeoPressable(
-                    onTap: () {
-                      Navigator.of(ctx).pop();
-                      _loadShops();
-                    },
-                    height: 48,
-                    pressDepth: 2.0,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFFD400),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFF101010), width: 2.0),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Color(0xFF101010),
-                          offset: Offset(2.5, 3.0),
-                        ),
-                      ],
-                    ),
-                    child: const Center(
-                      child: Text(
-                        'APPLY FILTERS',
-                        style: TextStyle(
-                          fontFamily: 'SpaceGrotesk',
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.5,
-                          color: Color(0xFF101010),
-                        ),
+
+                          // Close Button (Square with 2px border and shadow)
+                          NeoPressable(
+                            onTap: () => Navigator.of(ctx).pop(),
+                            width: 44,
+                            height: 44,
+                            pressDepth: 2.0,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: const Color(0xFF101010), width: 2.0),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Color(0xFF101010),
+                                  offset: Offset(2.0, 2.0),
+                                ),
+                              ],
+                            ),
+                            alignment: Alignment.center,
+                            child: const Icon(
+                              Icons.close,
+                              size: 20,
+                              color: Color(0xFF101010),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                ],
+
+                    // Divider Line
+                    Container(
+                      height: 1.0,
+                      color: const Color(0x2E101010),
+                      margin: const EdgeInsets.symmetric(horizontal: 20),
+                    ),
+
+                    // Scrollable Sections
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // 1. CATEGORY
+                            const Text(
+                              'CATEGORY',
+                              style: TextStyle(
+                                fontFamily: 'SpaceGrotesk',
+                                fontWeight: FontWeight.w700,
+                                fontSize: 20,
+                                height: 1.0,
+                                letterSpacing: 0.0,
+                                color: Color(0xFF101010),
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+
+                            // 8 Category Boxes in 4x2 Grid
+                            GridView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: categories.length,
+                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 4,
+                                crossAxisSpacing: 10,
+                                mainAxisSpacing: 12,
+                                childAspectRatio: 0.95,
+                              ),
+                              itemBuilder: (context, index) {
+                                final cat = categories[index];
+                                final isSelected = tempCategory.toLowerCase() == cat['name']!.toLowerCase();
+                                return NeoPressable(
+                                  onTap: () {
+                                    setModalState(() {
+                                      if (isSelected) {
+                                        tempCategory = 'All';
+                                      } else {
+                                        tempCategory = cat['name']!;
+                                      }
+                                    });
+                                  },
+                                  pressDepth: 2.0,
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? const Color(0xFFFFD400)
+                                        : Colors.white,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: const Color(0xFF101010),
+                                      width: 1.6,
+                                    ),
+                                    boxShadow: const [
+                                      BoxShadow(
+                                        color: Color(0xFF000000),
+                                        offset: Offset(2.0, 2.0),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      SvgPicture.asset(
+                                        cat['icon']!,
+                                        width: 28,
+                                        height: 28,
+                                        colorFilter: const ColorFilter.mode(
+                                          Color(0xFF101010),
+                                          BlendMode.srcIn,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        cat['name']!,
+                                        style: const TextStyle(
+                                          fontFamily: 'Manrope',
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 10,
+                                          height: 1.19,
+                                          letterSpacing: 0.0,
+                                          color: Color(0xFF101010),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+
+                            const SizedBox(height: 24),
+
+                            // 2. PRICE RANGE
+                            const Text(
+                              'PRICE RANGE',
+                              style: TextStyle(
+                                fontFamily: 'SpaceGrotesk',
+                                fontWeight: FontWeight.w700,
+                                fontSize: 20,
+                                height: 1.0,
+                                letterSpacing: 0.0,
+                                color: Color(0xFF101010),
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+
+                            // 3 Price Pills
+                            Row(
+                              children: priceRanges.map((price) {
+                                final isSelected = tempPrice == price;
+                                return Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                                    child: NeoPressable(
+                                      onTap: () {
+                                        setModalState(() {
+                                          if (isSelected) {
+                                            tempPrice = 'All';
+                                          } else {
+                                            tempPrice = price;
+                                          }
+                                        });
+                                      },
+                                      height: 32,
+                                      pressDepth: 2.0,
+                                      decoration: BoxDecoration(
+                                        color: isSelected
+                                            ? const Color(0xFFFFD400)
+                                            : Colors.white,
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(
+                                          color: const Color(0xFF101010),
+                                          width: 1.2,
+                                        ),
+                                        boxShadow: const [
+                                          BoxShadow(
+                                            color: Color(0xFF000000),
+                                            offset: Offset(2.0, 2.0),
+                                          ),
+                                        ],
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        price,
+                                        style: const TextStyle(
+                                          fontFamily: 'Manrope',
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 12,
+                                          height: 1.33,
+                                          letterSpacing: 0.0,
+                                          color: Color(0xFF000000),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+
+                            const SizedBox(height: 24),
+
+                            // 3. DISTANCE
+                            const Text(
+                              'DISTANCE',
+                              style: TextStyle(
+                                fontFamily: 'SpaceGrotesk',
+                                fontWeight: FontWeight.w700,
+                                fontSize: 20,
+                                height: 1.0,
+                                letterSpacing: 0.0,
+                                color: Color(0xFF101010),
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+
+                            // 4 Distance Pills (2x2 Grid)
+                            Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildDistancePill(
+                                        distanceRanges[0],
+                                        tempDistance,
+                                        (val) => setModalState(() => tempDistance = val),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: _buildDistancePill(
+                                        distanceRanges[1],
+                                        tempDistance,
+                                        (val) => setModalState(() => tempDistance = val),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildDistancePill(
+                                        distanceRanges[2],
+                                        tempDistance,
+                                        (val) => setModalState(() => tempDistance = val),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: _buildDistancePill(
+                                        distanceRanges[3],
+                                        tempDistance,
+                                        (val) => setModalState(() => tempDistance = val),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+
+                            const SizedBox(height: 24),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    // Bottom Action Button: SHOW RESULT →
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
+                      child: NeoPressable(
+                        onTap: () {
+                          setState(() {
+                            _selectedCategory = tempCategory;
+                            _selectedPriceRange = tempPrice;
+                            _selectedDistance = tempDistance;
+                            if (tempDistance == 'Within 1 km') {
+                              _maxDistance = 1.0;
+                            } else if (tempDistance == '1 km to 3 km') {
+                              _maxDistance = 3.0;
+                            } else if (tempDistance == '3 km to 5 km') {
+                              _maxDistance = 5.0;
+                            } else {
+                              _maxDistance = 10.0;
+                            }
+                          });
+                          Navigator.of(ctx).pop();
+                          _loadShops();
+                        },
+                        height: 46,
+                        width: double.infinity,
+                        pressDepth: 2.5,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFD400),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFF101010), width: 2.0),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0xFF101010),
+                              offset: Offset(2.5, 2.5),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Text(
+                              'SHOW RESULT',
+                              style: TextStyle(
+                                fontFamily: 'Manrope',
+                                fontWeight: FontWeight.w700,
+                                fontSize: 12,
+                                height: 1.0,
+                                letterSpacing: 0.0,
+                                color: Color(0xFF101010),
+                              ),
+                            ),
+                            SizedBox(width: 8),
+                            VyomArrow.forward(
+                              size: 14,
+                              color: Color(0xFF101010),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           },
         );
       },
+    );
+  }
+
+  Widget _buildDistancePill(String title, String selected, ValueChanged<String> onSelected) {
+    final isSelected = title == selected;
+    return NeoPressable(
+      onTap: () => onSelected(title),
+      height: 32,
+      pressDepth: 2.0,
+      decoration: BoxDecoration(
+        color: isSelected ? const Color(0xFFFFD400) : Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFF101010), width: 1.2),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0xFF000000),
+            offset: Offset(2.0, 2.0),
+          ),
+        ],
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontFamily: 'Manrope',
+          fontWeight: FontWeight.w600,
+          fontSize: 12,
+          color: Color(0xFF101010),
+        ),
+      ),
     );
   }
 
