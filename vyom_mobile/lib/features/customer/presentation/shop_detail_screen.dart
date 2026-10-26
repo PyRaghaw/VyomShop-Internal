@@ -9,6 +9,7 @@ import '../../../core/data/mock_data.dart';
 import '../../../core/widgets/neo_pressable.dart';
 import '../../../core/widgets/product_card_widget.dart';
 import '../../../core/widgets/vyom_arrow.dart';
+import '../../../core/widgets/shop_contact_dialogs.dart';
 
 class ShopDetailScreen extends StatefulWidget {
   final ShopModel shop;
@@ -399,7 +400,7 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
                             // Call Button
                             Expanded(
                               child: NeoPressable(
-                                onTap: () {},
+                                onTap: () => showShopCallModal(context, shop),
                                 height: 46,
                                 pressDepth: 2.0,
                                 decoration: BoxDecoration(
@@ -419,7 +420,7 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
                                     Icon(Icons.phone_outlined, size: 16, color: Color(0xFF101010)),
                                     SizedBox(width: 6),
                                     Text(
-                                      'CALL BOUTIQUE',
+                                      'CALL SHOP',
                                       style: TextStyle(
                                         fontFamily: 'SpaceGrotesk',
                                         fontSize: 12,
@@ -435,7 +436,7 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
                             // Directions Button (Signature Golden Yellow)
                             Expanded(
                               child: NeoPressable(
-                                onTap: () {},
+                                onTap: () => showShopDirectionsModal(context, shop),
                                 height: 46,
                                 pressDepth: 2.0,
                                 decoration: BoxDecoration(

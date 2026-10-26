@@ -4,6 +4,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+import '../../../core/services/customer_service.dart';
 import '../../../core/widgets/neo_pressable.dart';
 import 'ai_matching_results_screen.dart';
 import 'customer_navigation_shell.dart';
@@ -233,6 +234,7 @@ class _AiSearchScanScreenState extends State<AiSearchScanScreen>
   void _searchProduct() {
     if (_capturedImagePath == null || _isProcessing) return;
 
+    CustomerService().incrementVisualScans();
     setState(() => _isProcessing = true);
 
     Future.delayed(const Duration(milliseconds: 900), () {

@@ -19,7 +19,7 @@ class SellerDashboardScreen extends StatefulWidget {
 class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
   final SellerService _sellerService = SellerService();
   List<ProductModel> _myProducts = [];
-  String _shopName = 'My Boutique';
+  String _shopName = 'My Shop';
   int _credits = 10;
 
   @override

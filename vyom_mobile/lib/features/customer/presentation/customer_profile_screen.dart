@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:permission_handler/permission_handler.dart';
+import '../../../core/data/mock_data.dart';
 import '../../../core/services/customer_service.dart';
 import '../../../core/widgets/neo_pressable.dart';
+import '../../../core/widgets/product_card_widget.dart';
 import '../../../core/widgets/vyom_arrow.dart';
 import '../../auth/presentation/choose_role_screen.dart';
 import '../../auth/presentation/phone_login_screen.dart';
 import '../../seller/presentation/seller_dashboard_screen.dart';
+import 'ai_search_scan_screen.dart';
 import 'customer_registration_screen.dart';
 
 class CustomerProfileScreen extends StatefulWidget {
@@ -157,7 +160,7 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
                   ),
                   const SizedBox(height: 4),
                   const Text(
-                    'Recent boutique queries and visual lookups',
+                    'Recent shop queries and visual lookups',
                     style: TextStyle(
                       fontFamily: 'Manrope',
                       fontSize: 12,
@@ -279,6 +282,460 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
     );
   }
 
+  void _showSavedProductsModal() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final savedNames = CustomerService().likedProductNames;
+            final allProducts = MockData.products;
+            final savedProducts = allProducts.where((p) => savedNames.contains(p.name)).toList();
+
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.85,
+              decoration: const BoxDecoration(
+                color: Color(0xFFF7F3E8),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                border: Border(
+                  top: BorderSide(color: Color(0xFF101010), width: 2.5),
+                ),
+              ),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 14, 20, 10),
+                    child: Column(
+                      children: [
+                        Center(
+                          child: Container(
+                            width: 44,
+                            height: 5,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF101010),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'YOUR WISHLIST & LIKES',
+                                  style: TextStyle(
+                                    fontFamily: 'Manrope',
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF939393),
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'Saved Products (${savedProducts.length})',
+                                  style: const TextStyle(
+                                    fontFamily: 'SpaceGrotesk',
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w800,
+                                    color: Color(0xFF101010),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            GestureDetector(
+                              onTap: () => Navigator.of(ctx).pop(),
+                              child: Container(
+                                padding: const EdgeInsets.all(5),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: const Color(0xFF101010), width: 1.5),
+                                ),
+                                child: const Icon(Icons.close, size: 18, color: Color(0xFF101010)),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(height: 1.4, color: const Color(0xFF101010)),
+                  Expanded(
+                    child: savedProducts.isEmpty
+                        ? Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(32),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(color: const Color(0xFF101010), width: 1.8),
+                                    ),
+                                    child: const Icon(Icons.favorite_border, size: 36, color: Color(0xFF939393)),
+                                  ),
+                                  const SizedBox(height: 14),
+                                  const Text(
+                                    'No Saved Products Yet',
+                                    style: TextStyle(
+                                      fontFamily: 'SpaceGrotesk',
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w800,
+                                      color: Color(0xFF101010),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  const Text(
+                                    'Browse local shops and tap the heart icon on any piece to save it for quick lookup or in-store trial.',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontFamily: 'Manrope',
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                      color: Color(0xFF6E6E6E),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                        : GridView.builder(
+                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 14,
+                              mainAxisSpacing: 14,
+                              childAspectRatio: 0.71,
+                            ),
+                            itemCount: savedProducts.length,
+                            itemBuilder: (context, index) {
+                              final product = savedProducts[index];
+                              return ProductCardWidget(
+                                product: product,
+                                isFavorite: true,
+                                onFavoriteTap: () {
+                                  CustomerService().removeLikedProduct(product.name);
+                                  setModalState(() {});
+                                  setState(() {});
+                                  _showNeoSnackBar('${product.name} removed from saved finds');
+                                },
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showVisualScansModal() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        final count = CustomerService().visualScansCount;
+
+        return Container(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+          decoration: const BoxDecoration(
+            color: Color(0xFFF7F3E8),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            border: Border(
+              top: BorderSide(color: Color(0xFF101010), width: 2.5),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 44,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF101010),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      const Text(
+                        'VISUAL SCANS',
+                        style: TextStyle(
+                          fontFamily: 'SpaceGrotesk',
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF101010),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFD400),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFF101010), width: 1.2),
+                        ),
+                        child: Text(
+                          '$count TOTAL',
+                          style: const TextStyle(
+                            fontFamily: 'Manrope',
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF101010),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  GestureDetector(
+                    onTap: () => Navigator.of(ctx).pop(),
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: const Color(0xFF101010), width: 1.5),
+                      ),
+                      child: const Icon(Icons.close, size: 18, color: Color(0xFF101010)),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              const Text(
+                'AI-driven local visual search activity',
+                style: TextStyle(
+                  fontFamily: 'Manrope',
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF6B6B65),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFF101010), width: 1.8),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0xFF101010),
+                      offset: Offset(2.0, 2.0),
+                    ),
+                  ],
+                ),
+                child: const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.auto_awesome, color: Color(0xFF101010), size: 20),
+                        SizedBox(width: 8),
+                        Text(
+                          'Visual AI Feature Matching',
+                          style: TextStyle(
+                            fontFamily: 'SpaceGrotesk',
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF101010),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Every photo you capture matches directly with the live catalog of neighborhood shops in Salt Lake, Park Street, and surrounding hubs.',
+                      style: TextStyle(
+                        fontFamily: 'Manrope',
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFF555555),
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 18),
+              NeoPressable(
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const AiSearchScanScreen()),
+                  );
+                },
+                height: 50,
+                width: double.infinity,
+                pressDepth: 2.0,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFD400),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFF101010), width: 1.8),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0xFF101010),
+                      offset: Offset(2.0, 2.5),
+                    ),
+                  ],
+                ),
+                child: const Center(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.camera_alt, size: 18, color: Color(0xFF101010)),
+                      SizedBox(width: 8),
+                      Text(
+                        'OPEN CAMERA SCANNER',
+                        style: TextStyle(
+                          fontFamily: 'SpaceGrotesk',
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF101010),
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showAppSettingsModal() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Container(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+              decoration: const BoxDecoration(
+                color: Color(0xFFF7F3E8),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                border: Border(
+                  top: BorderSide(color: Color(0xFF101010), width: 2.5),
+                ),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 44,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF101010),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'APP SETTINGS',
+                        style: TextStyle(
+                          fontFamily: 'SpaceGrotesk',
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF101010),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () => Navigator.of(ctx).pop(),
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: const Color(0xFF101010), width: 1.5),
+                          ),
+                          child: const Icon(Icons.close, size: 18, color: Color(0xFF101010)),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Preferences, display theme, and application cache',
+                    style: TextStyle(
+                      fontFamily: 'Manrope',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF6B6B65),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildNeoSettingTile(
+                    icon: Icons.palette_outlined,
+                    title: 'Display Theme',
+                    subtitle: 'Neo-Brutalist Light (Default High Contrast)',
+                    trailing: const Icon(Icons.check_circle, color: Color(0xFF00875A), size: 20),
+                  ),
+                  const SizedBox(height: 10),
+                  _buildNeoSettingTile(
+                    icon: Icons.cleaning_services_outlined,
+                    title: 'Clear Image & Product Cache',
+                    subtitle: 'Free local storage space',
+                    onTap: () {
+                      PaintingBinding.instance.imageCache.clear();
+                      PaintingBinding.instance.imageCache.clearLiveImages();
+                      _showNeoSnackBar('Image & temporary cache cleared!');
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  _buildNeoSettingTile(
+                    icon: Icons.info_outline,
+                    title: 'App Version',
+                    subtitle: 'Vyom Mobile v1.2.0 • Build 26 (Release)',
+                  ),
+                  const SizedBox(height: 10),
+                  _buildNeoSettingTile(
+                    icon: Icons.privacy_tip_outlined,
+                    title: 'Privacy Policy & Terms',
+                    subtitle: 'Read our customer terms of service',
+                    onTap: () {
+                      _showNeoSnackBar('Viewing latest privacy terms');
+                    },
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   void _showPrivacyPermissionsModal() {
     _syncPermissions();
 
@@ -373,7 +830,7 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
                   _buildPermissionTile(
                     icon: Icons.location_on_outlined,
                     title: 'Location Services',
-                    subtitle: 'Show nearby boutiques within your neighborhood',
+                    subtitle: 'Show nearby shops within your neighborhood',
                     value: _locationPermission,
                     onChanged: (val) async {
                       if (val) {
@@ -526,7 +983,7 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
               ),
               const SizedBox(height: 4),
               const Text(
-                'Find any outfit in local boutiques in 4 simple steps',
+                'Find any outfit in local shops in 4 simple steps',
                 style: TextStyle(
                   fontFamily: 'Manrope',
                   fontSize: 12,
@@ -539,7 +996,7 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
                 stepNumber: '1',
                 icon: Icons.camera_alt_outlined,
                 title: 'Open Camera Scanner',
-                subtitle: 'Tap the camera scanner icon in the search bar or boutique page',
+                subtitle: 'Tap the camera scanner icon in the search bar or shop page',
               ),
               const SizedBox(height: 10),
               _buildVisualSearchStep(
@@ -560,7 +1017,7 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
                 stepNumber: '4',
                 icon: Icons.search_rounded,
                 title: 'Discover Local Matches',
-                subtitle: 'Get instant matching products available in nearby boutiques!',
+                subtitle: 'Get instant matching products available in nearby shops!',
               ),
               const SizedBox(height: 20),
               NeoPressable(
@@ -762,7 +1219,7 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
                     ),
                   ),
                   NeoPressable(
-                    onTap: () {},
+                    onTap: _showAppSettingsModal,
                     width: 44,
                     height: 44,
                     pressDepth: 1.5,
@@ -820,7 +1277,7 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Text(
-                              'OWN A BOUTIQUE?',
+                              'OWN A SHOP?',
                               style: TextStyle(
                                 fontFamily: 'Manrope',
                                 fontSize: 9,
@@ -903,8 +1360,10 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
               Row(
                 children: [
                   Expanded(
-                    child: Container(
+                    child: NeoPressable(
+                      onTap: _showSavedProductsModal,
                       padding: const EdgeInsets.all(16),
+                      pressDepth: 1.5,
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(14),
@@ -922,7 +1381,7 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
                           const Icon(Icons.favorite, color: Colors.red, size: 22),
                           const SizedBox(height: 8),
                           Text(
-                            customer.isRegistered ? '4' : '0',
+                            CustomerService().likedProductNames.length.toString(),
                             style: const TextStyle(
                               fontFamily: 'SpaceGrotesk',
                               fontSize: 22,
@@ -946,8 +1405,10 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Container(
+                    child: NeoPressable(
+                      onTap: _showVisualScansModal,
                       padding: const EdgeInsets.all(16),
+                      pressDepth: 1.5,
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(14),
@@ -965,7 +1426,7 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
                           const Icon(Icons.camera_alt_outlined, color: Color(0xFF101010), size: 22),
                           const SizedBox(height: 8),
                           Text(
-                            customer.isRegistered ? '12' : '0',
+                            CustomerService().visualScansCount.toString(),
                             style: const TextStyle(
                               fontFamily: 'SpaceGrotesk',
                               fontSize: 22,
@@ -1008,7 +1469,7 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
               _buildNeoSettingTile(
                 icon: Icons.notifications_none,
                 title: 'Neighborhood Alerts',
-                subtitle: 'New boutique additions and local updates',
+                subtitle: 'New shop additions and local updates',
                 trailing: Switch(
                   value: _neighborhoodAlerts,
                   activeThumbColor: const Color(0xFF101010),
@@ -1278,7 +1739,7 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
                     ),
                     const SizedBox(height: 3),
                     const Text(
-                      'Exploring local boutique catalog',
+                      'Exploring local shop catalog',
                       style: TextStyle(
                         fontFamily: 'Manrope',
                         fontSize: 12,
@@ -1305,7 +1766,7 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
                 SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Create a profile or login to save favorites & get local boutique drops',
+                    'Create a profile or login to save favorites & get local shop drops',
                     style: TextStyle(
                       fontFamily: 'Manrope',
                       fontSize: 11,

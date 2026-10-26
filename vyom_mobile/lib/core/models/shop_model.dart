@@ -126,7 +126,7 @@ class ShopModel {
   factory ShopModel.empty() {
     return const ShopModel(
       id: 'shop_default',
-      name: 'Local Boutique',
+      name: 'Local Shop',
       category: 'Fashion & Lifestyle',
       tag: 'LOCAL GEM',
       rating: 4.8,

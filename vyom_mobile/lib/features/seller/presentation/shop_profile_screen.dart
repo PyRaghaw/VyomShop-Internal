@@ -54,7 +54,7 @@ class _ShopProfileScreenState extends State<ShopProfileScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Boutique Profile'),
+        title: const Text('Shop Profile'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -161,7 +161,7 @@ class _ShopProfileScreenState extends State<ShopProfileScreen> {
                   const SizedBox(height: 24),
 
                   NeoButton(
-                    text: 'Save Boutique Profile',
+                    text: 'Save Shop Profile',
                     variant: NeoButtonVariant.primary,
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(

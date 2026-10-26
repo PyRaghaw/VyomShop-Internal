@@ -4,7 +4,7 @@ import '../models/shop_model.dart';
 /// Centralized Mock and Fallback Data Store.
 ///
 /// NOTE FOR FUTURE CLEANUP:
-/// All sample boutiques, products, and location data are cleanly isolated in this file.
+/// All sample shops, products, and location data are cleanly isolated in this file.
 /// If you want to switch entirely to live backend APIs, simply set [enableMockData] to false,
 /// or remove this file without touching any UI screens or business logic.
 class MockData {
@@ -48,7 +48,7 @@ class MockData {
       closingTime: '10:00 PM',
       phone: '+91 98301 22345',
       imageUrl: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=800&auto=format&fit=crop&q=80',
-      description: 'Premier sneaker boutique stocking rare kicks, retro silhouettes, and streetwear footwear right in Salt Lake.',
+      description: 'Premier sneaker shop stocking rare kicks, retro silhouettes, and streetwear footwear right in Salt Lake.',
     ),
     ShopModel(
       id: 'shop_urban_threadz',
@@ -67,7 +67,7 @@ class MockData {
       closingTime: '09:30 PM',
       phone: '+91 98312 87654',
       imageUrl: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&auto=format&fit=crop&q=80',
-      description: 'Independent boutique dedicated to premium streetwear, oversized tees, and tailored unisex urban fits.',
+      description: 'Independent shop dedicated to premium streetwear, oversized tees, and tailored unisex urban fits.',
     ),
     ShopModel(
       id: 'shop_denim_room',

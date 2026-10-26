@@ -1,10 +1,8 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'ai_search_scan_screen.dart';
 import 'search_results_screen.dart';
-import 'product_detail_screen.dart';
 import '../../../core/data/mock_data.dart';
 import '../../../core/models/shop_model.dart';
 import '../../../core/models/product_model.dart';
@@ -13,8 +11,10 @@ import '../../../core/services/location_service.dart';
 import '../../../core/services/product_service.dart';
 import '../../../core/services/shop_service.dart';
 import '../../../core/widgets/neo_pressable.dart';
+import '../../../core/widgets/product_card_widget.dart';
 import '../../../core/widgets/shop_card_widget.dart';
 import '../../../core/widgets/vyom_arrow.dart';
+import 'interactive_map_picker_sheet.dart';
 
 class CustomerHomeScreen extends StatefulWidget {
   const CustomerHomeScreen({super.key});
@@ -59,6 +59,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   void initState() {
     super.initState();
     _selectedNeighborhood = CustomerService().neighborhood;
+    _favoriteProductNames.addAll(CustomerService().likedProductNames);
     // Pre-populate with rich mock data so the app displays immediately
     _allProducts = MockData.products;
     _allShops = MockData.shops;
@@ -121,47 +122,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
     }
   }
 
-  Widget _buildSmartImage(String path, {BoxFit fit = BoxFit.cover, double? width, double? height}) {
-    if (path.startsWith('http://') || path.startsWith('https://')) {
-      return Image.network(
-        path,
-        fit: fit,
-        width: width,
-        height: height,
-        errorBuilder: (context, error, stackTrace) => Container(
-          color: const Color(0xFFF7F3E8),
-          child: const Icon(Icons.shopping_bag_outlined, color: Color(0xFF888888)),
-        ),
-      );
-    } else if (path.startsWith('assets/')) {
-      return Image.asset(
-        path,
-        fit: fit,
-        width: width,
-        height: height,
-        errorBuilder: (context, error, stackTrace) => Container(
-          color: const Color(0xFFF7F3E8),
-          child: const Icon(Icons.shopping_bag_outlined, color: Color(0xFF888888)),
-        ),
-      );
-    } else if (path.isNotEmpty && File(path).existsSync()) {
-      return Image.file(
-        File(path),
-        fit: fit,
-        width: width,
-        height: height,
-        errorBuilder: (context, error, stackTrace) => Container(
-          color: const Color(0xFFF7F3E8),
-          child: const Icon(Icons.shopping_bag_outlined, color: Color(0xFF888888)),
-        ),
-      );
-    } else {
-      return Container(
-        color: const Color(0xFFF7F3E8),
-        child: const Icon(Icons.shopping_bag_outlined, color: Color(0xFF888888)),
-      );
-    }
-  }
+
 
   void _showNeighborhoodPicker() {
     showModalBottomSheet(
@@ -288,7 +249,109 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                               ),
                             ),
                             Text(
-                              'Automatically detect closest boutiques',
+                              'Automatically detect closest shops',
+                              style: TextStyle(
+                                fontFamily: 'Manrope',
+                                fontWeight: FontWeight.w600,
+                                fontSize: 10.5,
+                                color: Color(0xFF555555),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.arrow_forward_ios, size: 14, color: Color(0xFF101010)),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+
+              // "CHOOSE ON MAP" Button
+              NeoPressable(
+                onTap: () async {
+                  Navigator.of(ctx).pop();
+                  final point = await InteractiveMapPickerSheet.show(context);
+                  if (point != null && mounted) {
+                    final nearest = LocationService().findNearestNeighborhood(point.latitude, point.longitude);
+                    setState(() {
+                      _selectedNeighborhood = nearest.fullName;
+                    });
+                    CustomerService().neighborhood = nearest.fullName;
+                    final pos = Position(
+                      latitude: point.latitude,
+                      longitude: point.longitude,
+                      timestamp: DateTime.now(),
+                      accuracy: 5.0,
+                      altitude: 0,
+                      altitudeAccuracy: 0,
+                      heading: 0,
+                      headingAccuracy: 0,
+                      speed: 0,
+                      speedAccuracy: 0,
+                    );
+                    LocationService().setCustomPosition(pos, isLive: true);
+                    _applyLocationFilter(userPosition: pos);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Location pinned on Map: ${nearest.fullName}',
+                          style: const TextStyle(
+                            fontFamily: 'Manrope',
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                        backgroundColor: const Color(0xFF101010),
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  }
+                },
+                height: 54,
+                pressDepth: 1.5,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFF101010), width: 1.6),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0xFF101010),
+                      offset: Offset(2.0, 2.5),
+                    ),
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFD400),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: const Color(0xFF101010), width: 1.2),
+                        ),
+                        child: const Icon(Icons.map_outlined, size: 18, color: Color(0xFF101010)),
+                      ),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'CHOOSE ON MAP',
+                              style: TextStyle(
+                                fontFamily: 'SpaceGrotesk',
+                                fontWeight: FontWeight.w800,
+                                fontSize: 13,
+                                color: Color(0xFF101010),
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            Text(
+                              'Drop a pin anywhere on OpenStreetMap',
                               style: TextStyle(
                                 fontFamily: 'Manrope',
                                 fontWeight: FontWeight.w600,
@@ -348,6 +411,238 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
               }),
             ],
           ),
+        );
+      },
+    );
+  }
+
+  void _showNotificationsModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final notifs = CustomerService().notifications;
+            final unreadCount = notifs.where((n) => !(n['isRead'] as bool)).length;
+
+            return Container(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+              decoration: const BoxDecoration(
+                color: Color(0xFFF7F3E8),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                border: Border(
+                  top: BorderSide(color: Color(0xFF101010), width: 2.5),
+                ),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 44,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF101010),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          const Text(
+                            'NOTIFICATIONS',
+                            style: TextStyle(
+                              fontFamily: 'SpaceGrotesk',
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF101010),
+                            ),
+                          ),
+                          if (unreadCount > 0) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFD400),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: const Color(0xFF101010), width: 1.2),
+                              ),
+                              child: Text(
+                                '$unreadCount NEW',
+                                style: const TextStyle(
+                                  fontFamily: 'Manrope',
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFF101010),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      GestureDetector(
+                        onTap: () => Navigator.of(ctx).pop(),
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: const Color(0xFF101010), width: 1.5),
+                          ),
+                          child: const Icon(Icons.close, size: 18, color: Color(0xFF101010)),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Local shop offers, alerts, and updates',
+                        style: TextStyle(
+                          fontFamily: 'Manrope',
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF6B6B65),
+                        ),
+                      ),
+                      if (unreadCount > 0)
+                        GestureDetector(
+                          onTap: () {
+                            setModalState(() {
+                              CustomerService().markAllNotificationsRead();
+                            });
+                            setState(() {});
+                          },
+                          child: const Text(
+                            'Mark all read',
+                            style: TextStyle(
+                              fontFamily: 'Manrope',
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF101010),
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Flexible(
+                    child: ListView.separated(
+                      shrinkWrap: true,
+                      itemCount: notifs.length,
+                      separatorBuilder: (context, index) => const SizedBox(height: 10),
+                      itemBuilder: (context, index) {
+                        final item = notifs[index];
+                        final bool isRead = item['isRead'] as bool;
+                        final String type = item['type'] as String;
+
+                        IconData icon;
+                        switch (type) {
+                          case 'discount':
+                            icon = Icons.local_offer_outlined;
+                            break;
+                          case 'match':
+                            icon = Icons.auto_awesome;
+                            break;
+                          case 'order':
+                            icon = Icons.shopping_bag_outlined;
+                            break;
+                          default:
+                            icon = Icons.storefront_outlined;
+                        }
+
+                        return Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: isRead ? Colors.white : const Color(0xFFFFFDEB),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: const Color(0xFF101010),
+                              width: isRead ? 1.4 : 1.8,
+                            ),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color(0xFF101010),
+                                offset: Offset(2.0, 2.0),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFD400),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: const Color(0xFF101010), width: 1.2),
+                                ),
+                                child: Icon(icon, size: 18, color: const Color(0xFF101010)),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            item['title'] as String,
+                                            style: const TextStyle(
+                                              fontFamily: 'SpaceGrotesk',
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w800,
+                                              color: Color(0xFF101010),
+                                            ),
+                                          ),
+                                        ),
+                                        Text(
+                                          item['time'] as String,
+                                          style: const TextStyle(
+                                            fontFamily: 'Manrope',
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w600,
+                                            color: Color(0xFF939393),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 3),
+                                    Text(
+                                      item['message'] as String,
+                                      style: const TextStyle(
+                                        fontFamily: 'Manrope',
+                                        fontSize: 11.5,
+                                        fontWeight: FontWeight.w500,
+                                        color: Color(0xFF555555),
+                                        height: 1.3,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
         );
       },
     );
@@ -501,15 +796,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
 
         // Notification Bell Button
         NeoPressable(
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('No new notifications right now'),
-                duration: Duration(seconds: 2),
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
-          },
+          onTap: () => _showNotificationsModal(context),
           width: 52,
           height: 52,
           pressDepth: 2.0,
@@ -969,7 +1256,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                 SizedBox(width: 14),
                 Expanded(
                   child: Text(
-                    'No products listed in this neighbourhood yet.\nReal items will appear here as local boutiques upload products.',
+                    'No products listed in this neighbourhood yet.\nReal items will appear here as local shops upload products.',
                     style: TextStyle(
                       fontFamily: 'Manrope',
                       fontWeight: FontWeight.w600,
@@ -1002,250 +1289,20 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   }
 
   Widget _buildProductCard(ProductModel product) {
-    final isFavorite = _favoriteProductNames.contains(product.name);
-    final cleanPrice = product.price.toInt();
-    final cleanMrp = product.mrp?.toInt();
-    final cleanRating = product.rating.toStringAsFixed(1);
-    final cleanDistance = '${product.distanceKm.toStringAsFixed(1)} km';
-
-    return NeoPressable(
-      onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => ProductDetailScreen(product: product),
-          ),
-        );
+    return ProductCardWidget(
+      product: product,
+      isFavorite: _favoriteProductNames.contains(product.name),
+      onFavoriteTap: () {
+        CustomerService().toggleFavoriteProduct(product.name);
+        setState(() {
+          if (_favoriteProductNames.contains(product.name)) {
+            _favoriteProductNames.remove(product.name);
+          } else {
+            _favoriteProductNames.add(product.name);
+          }
+        });
       },
-      pressDepth: 2.0,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFF101010), width: 2.0),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0xFF101010),
-            offset: Offset(2.5, 3.0),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Product Image with Star Badge and Heart Button
-            Expanded(
-              flex: 61,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  _buildSmartImage(product.imageUrl),
-                  // Rating Badge (Top Left)
-                  Positioned(
-                    top: 8,
-                    left: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFFD400),
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: const Color(0xFF101010), width: 1.2),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Color(0xFF101010),
-                            offset: Offset(1.0, 1.0),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.star, size: 10, color: Color(0xFF101010)),
-                          const SizedBox(width: 2.5),
-                          Text(
-                            cleanRating,
-                            style: const TextStyle(
-                              fontFamily: 'Manrope',
-                              fontWeight: FontWeight.w700,
-                              fontSize: 10,
-                              color: Color(0xFF101010),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  // Wishlist Heart (Top Right)
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: NeoPressable(
-                      onTap: () {
-                        setState(() {
-                          final name = product.name;
-                          if (isFavorite) {
-                            _favoriteProductNames.remove(name);
-                          } else {
-                            _favoriteProductNames.add(name);
-                          }
-                        });
-                      },
-                      width: 26,
-                      height: 26,
-                      pressDepth: 1.0,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: const Color(0xFF101010), width: 1.2),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Color(0xFF101010),
-                            offset: Offset(1.0, 1.0),
-                          ),
-                        ],
-                      ),
-                      child: Center(
-                        child: Icon(
-                          isFavorite ? Icons.favorite : Icons.favorite_border,
-                          size: 13,
-                          color: isFavorite ? const Color(0xFFFF4800) : const Color(0xFF101010),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Product Details
-            Expanded(
-              flex: 39,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(10, 5, 10, 6),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          product.category.toUpperCase(),
-                          style: const TextStyle(
-                            fontFamily: 'Manrope',
-                            fontSize: 9,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.3,
-                            color: Color(0xFF939393),
-                          ),
-                        ),
-                        const SizedBox(height: 1.5),
-                        Text(
-                          product.name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontFamily: 'Manrope',
-                            fontSize: 12.0,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: -0.2,
-                            color: Color(0xFF101010),
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Row(
-                          children: [
-                            Text(
-                              '₹$cleanPrice',
-                              style: const TextStyle(
-                                fontFamily: 'Manrope',
-                                fontSize: 14.5,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFF101010),
-                              ),
-                            ),
-                            if (cleanMrp != null) ...[
-                              const SizedBox(width: 5),
-                              Flexible(
-                                child: Text(
-                                  '₹$cleanMrp',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontFamily: 'Manrope',
-                                    fontSize: 9.5,
-                                    fontWeight: FontWeight.w400,
-                                    decoration: TextDecoration.lineThrough,
-                                    color: Color(0xFF292929),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              SvgPicture.asset(
-                                'assets/images/dstns_icon.svg',
-                                width: 13,
-                                height: 13,
-                              ),
-                              const SizedBox(width: 4),
-                              Flexible(
-                                child: Text(
-                                  product.shopName,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontFamily: 'Manrope',
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFF6E6E6E),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 5),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            SvgPicture.asset(
-                              'assets/images/direction.svg',
-                              width: 11,
-                              height: 11,
-                            ),
-                            const SizedBox(width: 3),
-                            Text(
-                              cleanDistance,
-                              style: const TextStyle(
-                                fontFamily: 'Manrope',
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF6E6E6E),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            ],
-          ),
-        ),
-      );
+    );
   }
 
   // --- NEARBY SHOPS ---
@@ -1347,7 +1404,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                 SizedBox(width: 14),
                 Expanded(
                   child: Text(
-                    'No local boutiques in this radius yet.\nReal shops will appear here once verified.',
+                    'No local shops in this radius yet.\nReal shops will appear here once verified.',
                     style: TextStyle(
                       fontFamily: 'Manrope',
                       fontWeight: FontWeight.w600,

@@ -278,9 +278,9 @@ class _CustomerRegistrationScreenState extends State<CustomerRegistrationScreen>
                 ),
               ),
 
-              // Title: BOUTIQUES
+              // Title: SHOPS
               const Text(
-                'BOUTIQUES',
+                'SHOPS',
                 style: TextStyle(
                   fontFamily: 'SpaceGrotesk',
                   fontWeight: FontWeight.w700,
@@ -453,7 +453,7 @@ class _CustomerRegistrationScreenState extends State<CustomerRegistrationScreen>
               ),
               const SizedBox(height: 20),
 
-              // Checkbox: "Keep me updated on local boutique offers"
+              // Checkbox: "Keep me updated on local shop offers"
               GestureDetector(
                 onTap: () => setState(() => _isOffersAgreed = !_isOffersAgreed),
                 behavior: HitTestBehavior.opaque,
@@ -484,7 +484,7 @@ class _CustomerRegistrationScreenState extends State<CustomerRegistrationScreen>
                     const SizedBox(width: 12),
                     const Expanded(
                       child: Text(
-                        'Keep me updated on new local drops, sales & boutique arrivals',
+                        'Keep me updated on new local drops, sales & shop arrivals',
                         style: TextStyle(
                           fontFamily: 'Manrope',
                           fontWeight: FontWeight.w500,

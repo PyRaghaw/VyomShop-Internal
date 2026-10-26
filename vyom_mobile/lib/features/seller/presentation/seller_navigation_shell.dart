@@ -60,7 +60,7 @@ class _SellerNavigationShellState extends State<SellerNavigationShell> {
                 _buildNavItem(index: 0, icon: Icons.dashboard_outlined, activeIcon: Icons.dashboard, label: 'Dashboard'),
                 _buildNavItem(index: 1, icon: Icons.inventory_2_outlined, activeIcon: Icons.inventory_2, label: 'Products'),
                 _buildNavItem(index: 2, icon: Icons.insights_outlined, activeIcon: Icons.insights, label: 'Analytics'),
-                _buildNavItem(index: 3, icon: Icons.storefront_outlined, activeIcon: Icons.storefront, label: 'Boutique'),
+                _buildNavItem(index: 3, icon: Icons.storefront_outlined, activeIcon: Icons.storefront, label: 'Shop'),
               ],
             ),
           ),

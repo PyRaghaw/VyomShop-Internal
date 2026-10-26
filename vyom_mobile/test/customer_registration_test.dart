@@ -24,7 +24,7 @@ void main() {
     // 1. Verify Headlines & Subtitle
     expect(find.text('CUSTOMER ONBOARDING'), findsOneWidget);
     expect(find.text('EXPLORE LOCAL'), findsOneWidget);
-    expect(find.text('BOUTIQUES'), findsOneWidget);
+    expect(find.text('SHOPS'), findsOneWidget);
     expect(find.text('Tell us a bit about you to discover nearby gems'), findsOneWidget);
 
     // 2. Verify Form Labels

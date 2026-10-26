@@ -50,7 +50,7 @@ class _SellerAnalyticsScreenState extends State<SellerAnalyticsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final shopName = _shop?.name ?? 'Your Boutique';
+    final shopName = _shop?.name ?? 'Your Shop';
     final stats = _analytics?['stats'] as Map<String, dynamic>?;
     final totalViews = stats?['totalViews']?.toString() ?? _analytics?['totalViews']?.toString() ?? (_products.isNotEmpty ? '120' : '0');
     final directions = stats?['directionClicks']?.toString() ?? _analytics?['directionsRouted']?.toString() ?? (_products.isNotEmpty ? '15' : '0');

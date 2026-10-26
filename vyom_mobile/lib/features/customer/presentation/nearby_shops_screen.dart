@@ -8,7 +8,9 @@ import '../../../core/services/shop_service.dart';
 import '../../../core/widgets/neo_pressable.dart';
 import '../../../core/widgets/shop_card_widget.dart';
 import '../../../core/widgets/vyom_arrow.dart';
+import 'package:geolocator/geolocator.dart';
 import 'ai_search_scan_screen.dart';
+import 'interactive_map_picker_sheet.dart';
 import 'search_results_screen.dart';
 
 class NearbyShopsScreen extends StatefulWidget {
@@ -57,7 +59,7 @@ class _NearbyShopsScreenState extends State<NearbyShopsScreen> {
   void initState() {
     super.initState();
     _selectedNeighborhood = CustomerService().neighborhood;
-    // Pre-populate with ranked mock shops so UI always has rich boutique data
+    // Pre-populate with ranked mock shops so UI always has rich shop data
     _shops = LocationService().filterAndRankShops(
       MockData.shops,
       _selectedNeighborhood,
@@ -212,7 +214,99 @@ class _NearbyShopsScreenState extends State<NearbyShopsScreen> {
                               ),
                             ),
                             Text(
-                              'Detect closest local boutiques',
+                              'Detect closest local shops',
+                              style: TextStyle(
+                                fontFamily: 'Manrope',
+                                fontWeight: FontWeight.w600,
+                                fontSize: 10.5,
+                                color: Color(0xFF555555),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.arrow_forward_ios, size: 14, color: Color(0xFF101010)),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              // Interactive Map Picker button
+              NeoPressable(
+                onTap: () async {
+                  Navigator.of(ctx).pop();
+                  final point = await InteractiveMapPickerSheet.show(context);
+                  if (point != null && mounted) {
+                    final nearest = LocationService().findNearestNeighborhood(
+                      point.latitude,
+                      point.longitude,
+                    );
+                    setState(() {
+                      _selectedNeighborhood = nearest.fullName;
+                    });
+                    CustomerService().neighborhood = nearest.fullName;
+                    final pos = Position(
+                      latitude: point.latitude,
+                      longitude: point.longitude,
+                      timestamp: DateTime.now(),
+                      accuracy: 5.0,
+                      altitude: 0,
+                      altitudeAccuracy: 0,
+                      heading: 0,
+                      headingAccuracy: 0,
+                      speed: 0,
+                      speedAccuracy: 0,
+                    );
+                    LocationService().setCustomPosition(pos, isLive: true);
+                    _loadShops();
+                  }
+                },
+                height: 52,
+                pressDepth: 1.5,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFF101010), width: 1.6),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0xFF101010),
+                      offset: Offset(2.0, 2.5),
+                    ),
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFD400),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: const Color(0xFF101010), width: 1.2),
+                        ),
+                        child: const Icon(Icons.map_outlined, size: 18, color: Color(0xFF101010)),
+                      ),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'CHOOSE ON MAP',
+                              style: TextStyle(
+                                fontFamily: 'SpaceGrotesk',
+                                fontWeight: FontWeight.w800,
+                                fontSize: 13,
+                                color: Color(0xFF101010),
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            Text(
+                              'Drop a pin anywhere on OpenStreetMap',
                               style: TextStyle(
                                 fontFamily: 'Manrope',
                                 fontWeight: FontWeight.w600,
@@ -926,7 +1020,7 @@ class _NearbyShopsScreenState extends State<NearbyShopsScreen> {
               left: 16,
               top: 14,
               child: Text(
-                'LOCAL BOUTIQUES',
+                'LOCAL SHOPS',
                 style: TextStyle(
                   fontFamily: 'SpaceGrotesk',
                   fontWeight: FontWeight.w700,
@@ -1232,7 +1326,7 @@ class _NearbyShopsScreenState extends State<NearbyShopsScreen> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '${filteredShops.length} boutique${filteredShops.length == 1 ? '' : 's'} near $_selectedNeighborhood',
+                    '${filteredShops.length} shop${filteredShops.length == 1 ? '' : 's'} near $_selectedNeighborhood',
                     style: const TextStyle(
                       fontFamily: 'Manrope',
                       fontWeight: FontWeight.w500,

@@ -134,7 +134,7 @@ class _MyProductsScreenState extends State<MyProductsScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            _shop?.name ?? 'My Boutique',
+                            _shop?.name ?? 'My Shop',
                             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,

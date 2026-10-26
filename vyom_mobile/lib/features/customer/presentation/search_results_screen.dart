@@ -606,7 +606,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
       distanceKm: cleanDistance,
       imageUrl: product['image'] ?? '',
       description: product['description'] ??
-          'Curated boutique lifestyle piece available in-store at ${product['shopName']}. Drop by today to try it on in person!',
+          'Curated lifestyle piece available in-store at ${product['shopName']}. Drop by today to try it on in person!',
       sizes: (product['sizes'] as List<String>?) ?? const ['UK 7', 'UK 8', 'UK 9', 'UK 10'],
       colors: (product['colors'] as List<String>?) ?? const ['Default'],
     );
@@ -983,7 +983,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
             ),
             const SizedBox(height: 8),
             const Text(
-              'Try searching for another product or boutique brand',
+              'Try searching for another product or shop brand',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontFamily: 'Manrope',

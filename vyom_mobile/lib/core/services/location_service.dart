@@ -99,8 +99,8 @@ class LocationService {
 
       final position = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.medium,
-          timeLimit: Duration(seconds: 6),
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 10),
         ),
       );
 
@@ -113,6 +113,11 @@ class LocationService {
       _isLiveGpsActive = false;
       return null;
     }
+  }
+
+  void setCustomPosition(Position position, {bool isLive = true}) {
+    _currentPosition = position;
+    _isLiveGpsActive = isLive;
   }
 
   /// Match nearest neighborhood given coordinates

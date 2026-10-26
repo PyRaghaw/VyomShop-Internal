@@ -132,7 +132,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
             .map((c) => c.trim())
             .where((c) => c.isNotEmpty)
             .toList(),
-        'description': 'Curated boutique collection',
+        'description': 'Curated shop collection',
         'imageUrl': _selectedImage?.path ?? '',
         'images': (_selectedImage?.path != null && _selectedImage!.path.isNotEmpty)
             ? [_selectedImage!.path]

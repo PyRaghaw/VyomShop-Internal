@@ -26,7 +26,7 @@ void main() {
     expect(find.text('Salt Lake, Kolkata'), findsOneWidget);
 
     // 2. Verify Yellow Hero Banner
-    expect(find.text('LOCAL BOUTIQUES'), findsOneWidget);
+    expect(find.text('LOCAL SHOPS'), findsOneWidget);
     expect(find.text('GOOD FINDS.'), findsOneWidget);
     expect(find.text('RIGHT NEAR YOU.'), findsOneWidget);
 

@@ -787,7 +787,7 @@ class _AiMatchingResultsScreenState extends State<AiMatchingResultsScreen> {
         title: 'NO SHOPS FOUND',
         message: _searchQuery.isNotEmpty
             ? 'No local shops match "$_searchQuery". Try clearing your search.'
-            : 'No nearby boutique shops found for this category.',
+            : 'No nearby shops found for this category.',
       );
     }
 
