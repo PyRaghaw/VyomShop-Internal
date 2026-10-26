@@ -338,51 +338,56 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF101010),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: const Text(
-                                  'SELLER STUDIO',
-                                  style: TextStyle(
-                                    fontFamily: 'SpaceGrotesk',
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 9.5,
-                                    letterSpacing: 0.8,
-                                    color: Color(0xFFFFD400),
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF101010),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: const Text(
+                                    'SELLER STUDIO',
+                                    style: TextStyle(
+                                      fontFamily: 'SpaceGrotesk',
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 9.5,
+                                      letterSpacing: 0.8,
+                                      color: Color(0xFFFFD400),
+                                    ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(width: 6),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFE8F5E9),
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(color: const Color(0xFF2E7D32), width: 1.0),
-                                ),
-                                child: const Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(Icons.check_circle, size: 10, color: Color(0xFF2E7D32)),
-                                    SizedBox(width: 3),
-                                    Text(
-                                      'VERIFIED',
-                                      style: TextStyle(
-                                        fontFamily: 'SpaceGrotesk',
-                                        fontWeight: FontWeight.w800,
-                                        fontSize: 8.5,
-                                        color: Color(0xFF2E7D32),
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFE8F5E9),
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(color: const Color(0xFF2E7D32), width: 1.0),
+                                  ),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.check_circle, size: 10, color: Color(0xFF2E7D32)),
+                                      SizedBox(width: 3),
+                                      Text(
+                                        'VERIFIED',
+                                        style: TextStyle(
+                                          fontFamily: 'SpaceGrotesk',
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 8.5,
+                                          color: Color(0xFF2E7D32),
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                           const SizedBox(height: 6),
                           Text(
@@ -398,20 +403,25 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
                             overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 3),
-                          Row(
-                            children: [
-                              const Icon(Icons.location_on, size: 12, color: Color(0xFF6B6B65)),
-                              const SizedBox(width: 3),
-                              Text(
-                                '$_neighborhood • $_category',
-                                style: const TextStyle(
-                                  fontFamily: 'Manrope',
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF6B6B65),
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.location_on, size: 12, color: Color(0xFF6B6B65)),
+                                const SizedBox(width: 3),
+                                Text(
+                                  '$_neighborhood • $_category',
+                                  style: const TextStyle(
+                                    fontFamily: 'Manrope',
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF6B6B65),
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ],
                       ),
@@ -491,35 +501,41 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF101010),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  width: 6,
-                                  height: 6,
-                                  decoration: BoxDecoration(
-                                    color: _isOpen ? const Color(0xFF00FF66) : const Color(0xFFFF4444),
-                                    shape: BoxShape.circle,
-                                  ),
+                          Flexible(
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF101010),
+                                  borderRadius: BorderRadius.circular(20),
                                 ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  _isOpen ? 'LIVE ON LOCAL MAPS' : 'STORE CURRENTLY CLOSED',
-                                  style: const TextStyle(
-                                    fontFamily: 'SpaceGrotesk',
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 9.5,
-                                    letterSpacing: 0.5,
-                                    color: Colors.white,
-                                  ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      width: 6,
+                                      height: 6,
+                                      decoration: BoxDecoration(
+                                        color: _isOpen ? const Color(0xFF00FF66) : const Color(0xFFFF4444),
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      _isOpen ? 'LIVE ON LOCAL MAPS' : 'STORE CURRENTLY CLOSED',
+                                      style: const TextStyle(
+                                        fontFamily: 'SpaceGrotesk',
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 9.5,
+                                        letterSpacing: 0.5,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
+                              ),
                             ),
                           ),
                           // Toggle Open/Closed
@@ -592,22 +608,29 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
                                 borderRadius: BorderRadius.circular(10),
                                 border: Border.all(color: const Color(0xFF101010), width: 1.4),
                               ),
-                              child: const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.visibility_outlined, size: 14, color: Color(0xFFFFD400)),
-                                  SizedBox(width: 6),
-                                  Text(
-                                    'PREVIEW AS BUYER',
-                                    style: TextStyle(
-                                      fontFamily: 'SpaceGrotesk',
-                                      fontWeight: FontWeight.w800,
-                                      fontSize: 11,
-                                      color: Colors.white,
-                                      letterSpacing: 0.5,
-                                    ),
+                              child: const Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 4),
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.visibility_outlined, size: 14, color: Color(0xFFFFD400)),
+                                      SizedBox(width: 6),
+                                      Text(
+                                        'PREVIEW AS BUYER',
+                                        style: TextStyle(
+                                          fontFamily: 'SpaceGrotesk',
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 11,
+                                          color: Colors.white,
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ],
+                                ),
                               ),
                             ),
                           ),
@@ -622,22 +645,29 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
                                 borderRadius: BorderRadius.circular(10),
                                 border: Border.all(color: const Color(0xFF101010), width: 1.4),
                               ),
-                              child: const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.qr_code_2, size: 16, color: Color(0xFF101010)),
-                                  SizedBox(width: 6),
-                                  Text(
-                                    'STORE QR & LINK',
-                                    style: TextStyle(
-                                      fontFamily: 'SpaceGrotesk',
-                                      fontWeight: FontWeight.w800,
-                                      fontSize: 11,
-                                      color: Color(0xFF101010),
-                                      letterSpacing: 0.5,
-                                    ),
+                              child: const Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 4),
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.qr_code_2, size: 16, color: Color(0xFF101010)),
+                                      SizedBox(width: 6),
+                                      Text(
+                                        'STORE QR & LINK',
+                                        style: TextStyle(
+                                          fontFamily: 'SpaceGrotesk',
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 11,
+                                          color: Color(0xFF101010),
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ],
+                                ),
                               ),
                             ),
                           ),
@@ -653,16 +683,23 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: const [
-                    Text(
-                      'STORE FOOTFALL & METRICS',
-                      style: TextStyle(
-                        fontFamily: 'SpaceGrotesk',
-                        fontWeight: FontWeight.w800,
-                        fontSize: 14,
-                        letterSpacing: 0.6,
-                        color: Color(0xFF101010),
+                    Expanded(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'STORE FOOTFALL & METRICS',
+                          style: TextStyle(
+                            fontFamily: 'SpaceGrotesk',
+                            fontWeight: FontWeight.w800,
+                            fontSize: 14,
+                            letterSpacing: 0.6,
+                            color: Color(0xFF101010),
+                          ),
+                        ),
                       ),
                     ),
+                    SizedBox(width: 8),
                     Text(
                       'Real-time stats',
                       style: TextStyle(
@@ -767,19 +804,19 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              children: [
-                                Text(
-                                  '$_credits CREDITS REMAINING',
-                                  style: const TextStyle(
-                                    fontFamily: 'SpaceGrotesk',
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 13,
-                                    color: Color(0xFF101010),
-                                    letterSpacing: 0.5,
-                                  ),
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                '$_credits CREDITS REMAINING',
+                                style: const TextStyle(
+                                  fontFamily: 'SpaceGrotesk',
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 13,
+                                  color: Color(0xFF101010),
+                                  letterSpacing: 0.5,
                                 ),
-                              ],
+                              ),
                             ),
                             const SizedBox(height: 2),
                             const Text(
@@ -790,6 +827,8 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
                                 fontSize: 11,
                                 color: Color(0xFF6B6B65),
                               ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         ),
@@ -848,7 +887,7 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
                     );
                     _loadDashboard();
                   },
-                  height: 60,
+                  height: 68,
                   pressDepth: 2.0,
                   decoration: BoxDecoration(
                     color: const Color(0xFF101010),
@@ -879,18 +918,25 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                '+ ADD NEW PRODUCT WITH AI',
-                                style: TextStyle(
-                                  fontFamily: 'SpaceGrotesk',
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 13.5,
-                                  letterSpacing: 0.5,
-                                  color: Colors.white,
+                              FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  '+ ADD NEW PRODUCT WITH AI',
+                                  style: TextStyle(
+                                    fontFamily: 'SpaceGrotesk',
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 13.5,
+                                    letterSpacing: 0.5,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ),
+                              SizedBox(height: 2),
                               Text(
                                 'Auto-extracts material, color & fit attributes',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                   fontFamily: 'Manrope',
                                   fontWeight: FontWeight.w500,
@@ -939,16 +985,23 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
-                            'TRENDING SEARCHES NEAR YOU',
-                            style: TextStyle(
-                              fontFamily: 'SpaceGrotesk',
-                              fontWeight: FontWeight.w800,
-                              fontSize: 12.5,
-                              letterSpacing: 0.6,
-                              color: Color(0xFF101010),
+                          const Expanded(
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                'TRENDING SEARCHES NEAR YOU',
+                                style: TextStyle(
+                                  fontFamily: 'SpaceGrotesk',
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 12.5,
+                                  letterSpacing: 0.6,
+                                  color: Color(0xFF101010),
+                                ),
+                              ),
                             ),
                           ),
+                          const SizedBox(width: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
@@ -1024,37 +1077,44 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        const Text(
-                          'IN-STORE PRODUCTS',
-                          style: TextStyle(
-                            fontFamily: 'SpaceGrotesk',
-                            fontWeight: FontWeight.w800,
-                            fontSize: 14,
-                            letterSpacing: 0.6,
-                            color: Color(0xFF101010),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFD400),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFF101010), width: 1.2),
-                          ),
-                          child: Text(
-                            '${_myProducts.length} ITEMS',
-                            style: const TextStyle(
-                              fontFamily: 'SpaceGrotesk',
-                              fontWeight: FontWeight.w800,
-                              fontSize: 9.5,
-                              color: Color(0xFF101010),
+                    Expanded(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text(
+                              'IN-STORE PRODUCTS',
+                              style: TextStyle(
+                                fontFamily: 'SpaceGrotesk',
+                                fontWeight: FontWeight.w800,
+                                fontSize: 14,
+                                letterSpacing: 0.6,
+                                color: Color(0xFF101010),
+                              ),
                             ),
-                          ),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFD400),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: const Color(0xFF101010), width: 1.2),
+                              ),
+                              child: Text(
+                                '${_myProducts.length} ITEMS',
+                                style: const TextStyle(
+                                  fontFamily: 'SpaceGrotesk',
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 9.5,
+                                  color: Color(0xFF101010),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                     GestureDetector(
                       onTap: () async {
@@ -1215,73 +1275,81 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                   const SizedBox(height: 3),
-                                  Row(
-                                    children: [
-                                      Text(
-                                        '₹${p.price.toInt()}',
-                                        style: const TextStyle(
-                                          fontFamily: 'SpaceGrotesk',
-                                          fontWeight: FontWeight.w800,
-                                          fontSize: 14,
-                                          color: Color(0xFF101010),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 6),
-                                      if (p.mrp != null && p.mrp! > p.price)
+                                  FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    alignment: Alignment.centerLeft,
+                                    child: Row(
+                                      children: [
                                         Text(
-                                          '₹${p.mrp!.toInt()}',
+                                          '₹${p.price.toInt()}',
+                                          style: const TextStyle(
+                                            fontFamily: 'SpaceGrotesk',
+                                            fontWeight: FontWeight.w800,
+                                            fontSize: 14,
+                                            color: Color(0xFF101010),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        if (p.mrp != null && p.mrp! > p.price)
+                                          Text(
+                                            '₹${p.mrp!.toInt()}',
+                                            style: const TextStyle(
+                                              fontFamily: 'Manrope',
+                                              fontSize: 11,
+                                              decoration: TextDecoration.lineThrough,
+                                              color: Color(0xFF939393),
+                                            ),
+                                          ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          '• ${p.category}',
                                           style: const TextStyle(
                                             fontFamily: 'Manrope',
                                             fontSize: 11,
-                                            decoration: TextDecoration.lineThrough,
-                                            color: Color(0xFF939393),
+                                            fontWeight: FontWeight.w600,
+                                            color: Color(0xFF6B6B65),
                                           ),
                                         ),
-                                      const SizedBox(width: 6),
-                                      Text(
-                                        '• ${p.category}',
-                                        style: const TextStyle(
-                                          fontFamily: 'Manrope',
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w600,
-                                          color: Color(0xFF6B6B65),
-                                        ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                   const SizedBox(height: 4),
-                                  Row(
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                        decoration: BoxDecoration(
-                                          color: p.isAvailable ? const Color(0xFFE8F5E9) : const Color(0xFFFFEBEE),
-                                          borderRadius: BorderRadius.circular(4),
-                                          border: Border.all(
-                                            color: p.isAvailable ? const Color(0xFF2E7D32) : const Color(0xFFC62828),
-                                            width: 1.0,
+                                  FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    alignment: Alignment.centerLeft,
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: p.isAvailable ? const Color(0xFFE8F5E9) : const Color(0xFFFFEBEE),
+                                            borderRadius: BorderRadius.circular(4),
+                                            border: Border.all(
+                                              color: p.isAvailable ? const Color(0xFF2E7D32) : const Color(0xFFC62828),
+                                              width: 1.0,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            p.isAvailable ? 'IN STOCK' : 'OUT OF STOCK',
+                                            style: TextStyle(
+                                              fontFamily: 'SpaceGrotesk',
+                                              fontWeight: FontWeight.w800,
+                                              fontSize: 8.5,
+                                              color: p.isAvailable ? const Color(0xFF2E7D32) : const Color(0xFFC62828),
+                                            ),
                                           ),
                                         ),
-                                        child: Text(
-                                          p.isAvailable ? 'IN STOCK' : 'OUT OF STOCK',
-                                          style: TextStyle(
-                                            fontFamily: 'SpaceGrotesk',
-                                            fontWeight: FontWeight.w800,
-                                            fontSize: 8.5,
-                                            color: p.isAvailable ? const Color(0xFF2E7D32) : const Color(0xFFC62828),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          '${p.sizes.length} sizes available',
+                                          style: const TextStyle(
+                                            fontFamily: 'Manrope',
+                                            fontSize: 10.5,
+                                            color: Color(0xFF6B6B65),
                                           ),
                                         ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        '${p.sizes.length} sizes available',
-                                        style: const TextStyle(
-                                          fontFamily: 'Manrope',
-                                          fontSize: 10.5,
-                                          color: Color(0xFF6B6B65),
-                                        ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),
@@ -1490,36 +1558,39 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: const Color(0xFF101010), width: 1.2),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontFamily: 'Manrope',
-              fontWeight: FontWeight.w700,
-              fontSize: 11,
-              color: Color(0xFF101010),
-            ),
-          ),
-          const SizedBox(width: 6),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFD400),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              count,
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              title,
               style: const TextStyle(
-                fontFamily: 'SpaceGrotesk',
-                fontWeight: FontWeight.w800,
-                fontSize: 9,
+                fontFamily: 'Manrope',
+                fontWeight: FontWeight.w700,
+                fontSize: 11,
                 color: Color(0xFF101010),
               ),
             ),
-          ),
-        ],
+            const SizedBox(width: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFD400),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                count,
+                style: const TextStyle(
+                  fontFamily: 'SpaceGrotesk',
+                  fontWeight: FontWeight.w800,
+                  fontSize: 9,
+                  color: Color(0xFF101010),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
