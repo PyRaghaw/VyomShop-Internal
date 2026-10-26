@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../core/constants/app_colors.dart';
 import 'seller_dashboard_screen.dart';
 import 'my_products_screen.dart';
 import 'seller_analytics_screen.dart';
@@ -38,29 +37,19 @@ class _SellerNavigationShellState extends State<SellerNavigationShell> {
         children: _screens,
       ),
       bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          border: Border(
-            top: BorderSide(color: AppColors.foreground, width: 2.5),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black12,
-              offset: Offset(0, -2),
-              blurRadius: 4,
-            ),
-          ],
-        ),
+        color: const Color(0xFF101010),
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          top: false,
+          child: Container(
+            height: 66,
+            padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildNavItem(index: 0, icon: Icons.dashboard_outlined, activeIcon: Icons.dashboard, label: 'Dashboard'),
-                _buildNavItem(index: 1, icon: Icons.inventory_2_outlined, activeIcon: Icons.inventory_2, label: 'Products'),
-                _buildNavItem(index: 2, icon: Icons.insights_outlined, activeIcon: Icons.insights, label: 'Analytics'),
-                _buildNavItem(index: 3, icon: Icons.storefront_outlined, activeIcon: Icons.storefront, label: 'Shop'),
+                _buildNavItem(0, Icons.dashboard_outlined, Icons.dashboard, 'Dashboard'),
+                _buildNavItem(1, Icons.inventory_2_outlined, Icons.inventory_2, 'Products'),
+                _buildNavItem(2, Icons.insights_outlined, Icons.insights, 'Analytics'),
+                _buildNavItem(3, Icons.storefront_outlined, Icons.storefront, 'Shop'),
               ],
             ),
           ),
@@ -69,38 +58,52 @@ class _SellerNavigationShellState extends State<SellerNavigationShell> {
     );
   }
 
-  Widget _buildNavItem({
-    required int index,
-    required IconData icon,
-    required IconData activeIcon,
-    required String label,
-  }) {
+  Widget _buildNavItem(int index, IconData icon, IconData activeIcon, String label) {
     final isSelected = _currentIndex == index;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () => setState(() => _currentIndex = index),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary.withValues(alpha: 0.12) : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-        ),
+      child: SizedBox(
+        width: 64,
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              isSelected ? activeIcon : icon,
-              size: 22,
-              color: isSelected ? AppColors.primary : AppColors.mutedForeground,
-            ),
+            if (isSelected)
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFD400),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Center(
+                  child: Icon(
+                    activeIcon,
+                    size: 20,
+                    color: const Color(0xFF101010),
+                  ),
+                ),
+              )
+            else
+              SizedBox(
+                width: 32,
+                height: 32,
+                child: Center(
+                  child: Icon(
+                    icon,
+                    size: 22,
+                    color: const Color(0xFF8E8E8E),
+                  ),
+                ),
+              ),
             const SizedBox(height: 3),
             Text(
               label,
               style: TextStyle(
+                fontFamily: 'SpaceGrotesk',
                 fontSize: 10,
-                fontWeight: isSelected ? FontWeight.w900 : FontWeight.w700,
-                color: isSelected ? AppColors.primary : AppColors.mutedForeground,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                color: isSelected ? const Color(0xFFFFD400) : const Color(0xFF8E8E8E),
               ),
             ),
           ],
